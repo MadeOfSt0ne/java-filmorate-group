@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.controllers.FilmController;
-import ru.yandex.practicum.filmorate.models.Film;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Date;
 
