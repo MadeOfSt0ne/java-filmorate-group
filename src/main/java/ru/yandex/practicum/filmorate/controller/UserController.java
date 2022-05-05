@@ -6,13 +6,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.validator.UserValidator;
 
 import javax.validation.Valid;
 import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 /**
  * REST-контроллер для пользователей.
@@ -23,54 +20,53 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
-    private final UserStorage storage;
-    private final UserService service;
+    private final UserService userService;
 
     @GetMapping
     Collection<User> getAll() {
-        return storage.getAll();
+        return userService.getAllUsers();
     }
 
     @GetMapping("{id}")
-    User get(@PathVariable Long id) {
-        User user = storage.get(id);
-        if (user == null) throw new NoSuchElementException();
-        return user;
+    User get(@PathVariable final Long id) {
+        return userService.getUser(id);
     }
 
     @PostMapping
-    User create(@Valid @RequestBody User user) {
-        user = UserValidator.validate(user);
-        log.info("CREATE {}", user);
-        storage.add(user);
-        return user;
+    User create(@Valid @RequestBody final User user) {
+        final User validatedUser = UserValidator.validate(user);
+        log.info("CREATE {}", validatedUser);
+        userService.addUser(validatedUser);
+        return validatedUser;
     }
 
     @PutMapping
-    User update(@Valid @RequestBody User user) {
-        user = UserValidator.validate(user);
-        log.info("UPDATE {}", user);
-        storage.update(user);
-        return user;
+    User update(@Valid @RequestBody final User user) {
+        final User validatedUser = UserValidator.validate(user);
+        log.info("UPDATE {}", validatedUser);
+        userService.updateUser(validatedUser);
+        return validatedUser;
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
-    Collection<User> getFriends(@PathVariable Long id, @PathVariable Long otherId) {
-        return service.getFriendsIntersection(id, otherId);
+    Collection<User> getFriends(@PathVariable final Long id, @PathVariable final Long otherId) {
+        return userService.getFriendsIntersection(id, otherId);
     }
 
     @GetMapping("{id}/friends")
-    Collection<User> getFriends(@PathVariable Long id) {
-        return storage.get(id).getFriends().stream().map(storage::get).collect(Collectors.toList());
+    Collection<User> getFriends(@PathVariable final Long id) {
+        return userService.getUserFriends(id);
     }
 
     @PutMapping("{id}/friends/{friendId}")
-    void addFriends(@PathVariable Long id, @PathVariable Long friendId) {
-        service.addFriends(id, friendId);
+    void addFriends(@PathVariable final Long id, @PathVariable final Long friendId) {
+        log.info("USER ({}) ADDS TO FRIENDS USER ({})", id, friendId);
+        userService.addFriends(id, friendId);
     }
 
     @DeleteMapping("{id}/friends/{friendId}")
-    void deleteFriends(@PathVariable Long id, @PathVariable Long friendId) {
-        service.deleteFriends(id, friendId);
+    void deleteFriends(@PathVariable final Long id, @PathVariable final Long friendId) {
+        log.info("USER ({}) REMOVES FROM FRIENDS USER ({})", id, friendId);
+        userService.deleteFriends(id, friendId);
     }
 }

@@ -9,6 +9,9 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 
 import java.util.NoSuchElementException;
 
+/**
+ * Глобальный обработчик исключений для возвращения "значащих" кодов ошибок вместо 500-ых.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
