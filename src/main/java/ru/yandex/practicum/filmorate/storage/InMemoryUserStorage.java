@@ -63,4 +63,12 @@ public class InMemoryUserStorage implements UserStorage {
     public void remove(User user) {
         users.remove(user.getId());
     }
+
+    /**
+     * Очищает хранилище.
+     */
+    @Override
+    public void clear() {
+        users.clear();
+    }
 }

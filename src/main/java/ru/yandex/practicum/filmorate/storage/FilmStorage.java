@@ -43,4 +43,9 @@ public interface FilmStorage {
      * @param film фильм
      */
     void remove(Film film);
+
+    /**
+     * Очищает хранилище.
+     */
+    void clear();
 }

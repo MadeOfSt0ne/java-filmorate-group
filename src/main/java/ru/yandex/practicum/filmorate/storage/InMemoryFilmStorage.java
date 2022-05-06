@@ -63,4 +63,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void remove(Film film) {
         films.remove(film.getId());
     }
+
+    /**
+     * Очищает хранилище.
+     */
+    @Override
+    public void clear() {
+        films.clear();
+    }
 }

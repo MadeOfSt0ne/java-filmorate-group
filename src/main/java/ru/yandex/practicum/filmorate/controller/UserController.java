@@ -49,7 +49,7 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
-    Collection<User> getFriends(@PathVariable final Long id, @PathVariable final Long otherId) {
+    Collection<User> getCommonFriends(@PathVariable final Long id, @PathVariable final Long otherId) {
         return userService.getFriendsIntersection(id, otherId);
     }
 
@@ -60,13 +60,13 @@ public class UserController {
 
     @PutMapping("{id}/friends/{friendId}")
     void addFriends(@PathVariable final Long id, @PathVariable final Long friendId) {
-        log.info("USER ({}) ADDS TO FRIENDS USER ({})", id, friendId);
+        log.info("USER ({}) ADDS USER ({}) TO FRIENDS", id, friendId);
         userService.addFriends(id, friendId);
     }
 
     @DeleteMapping("{id}/friends/{friendId}")
     void deleteFriends(@PathVariable final Long id, @PathVariable final Long friendId) {
-        log.info("USER ({}) REMOVES FROM FRIENDS USER ({})", id, friendId);
+        log.info("USER ({}) REMOVES USER ({}) FROM FRIENDS", id, friendId);
         userService.deleteFriends(id, friendId);
     }
 }
