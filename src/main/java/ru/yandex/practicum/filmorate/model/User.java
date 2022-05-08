@@ -1,15 +1,18 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Builder;
 import lombok.Value;
-import ru.yandex.practicum.filmorate.utils.IdProvider;
 
 import javax.validation.constraints.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Value
+@Builder(toBuilder = true)
 public class User {
-    long id = IdProvider.getNextId(User.class);
+    Long id;
 
     @Email
     @NotBlank
@@ -25,4 +28,6 @@ public class User {
     @NotNull
     @Past
     Date birthday;
+
+    Set<Long> friends = new HashSet<>();
 }

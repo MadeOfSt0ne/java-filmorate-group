@@ -12,10 +12,10 @@ public final class IdProvider {
      * Генерирует последовательные уникальные идентификаторы по ключу из имени класса.
      *
      * @param className имя класс где нужен идентификатор
-     * @return уникальный идентификатор
+     * @return уникальный целочисленный идентификатор
      */
-    public static long getNextId(Object className) {
-        long nextId = ids.getOrDefault(className, 0L) + 1;
+    public static Long getNextLongId(Object className) {
+        Long nextId = ids.getOrDefault(className, 0L) + 1;
         ids.put(className, nextId);
         return nextId;
     }
