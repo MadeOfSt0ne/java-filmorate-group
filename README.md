@@ -2,45 +2,45 @@
 
 ```sql
 -- 1. добавление пользователя
-INSERT INTO `users` (`email`, `login`, `name`, `birthday`) VALUES ('root@localhost', 'root', '', '1970-01-01');
+INSERT INTO `users` (`email`, `login`, `name`, `birthday`) VALUES ('root@localhost', 'root', '', '1970-01-01')
 
 -- 2. обновление пользователя
-UPDATE `users` SET `name` = 'root' WHERE `id` = ?
+UPDATE `users` SET `name` = 'root' WHERE `user_id` = ?
 
 -- 3. удаление пользователя (+ нам надо удалить пользователя из всех друзей)
-DELETE `users` WHERE `id` = ?
+DELETE `users` WHERE `user_id` = ?
 
 -- 4. добавление пользователя в друзья
-INSERT INTO `friendships` (`who`, `whom`) VALUES (?, ?)
+INSERT INTO `friends` (`user_id`, `friend_id`) VALUES (?, ?)
 
 -- 5. удаление пользователя из друзей
-DELETE FROM `friendships` WHERE `who` = ? AND `whom` = ?
+DELETE FROM `friends` WHERE `user_id` = ? AND `friend_id` = ?
 
 -- 6. поиск друзей пользователя
-SELECT * FROM `users` WHERE `id` IN
-    (SELECT `whom` FROM `friendships` WHERE `who` = ?)
-  OR `id` IN
-    (SELECT `who` FROM `friendships` WHERE `whom` = ?)
+SELECT * FROM `users` WHERE `user_id` IN
+    (SELECT `friend_id` FROM `friends` WHERE `user_id` = ?)
+  OR `user_id` IN
+    (SELECT `user_id` FROM `friends` WHERE `friend_id` = ?)
 
 -- 7. поиск общих друзей
-SELECT * FROM `users` `u` WHERE `id` IN
-    (SELECT `whom` FROM `friendships` WHERE `who` = ?)
-  OR id IN
-    (SELECT `who` FROM `friendships` WHERE `whom` = ?)
+SELECT * FROM `users` WHERE `user_id` IN
+    (SELECT `friend_id` FROM `friends` WHERE `user_id` = ?)
+  OR `user_id` IN
+    (SELECT `user_id` FROM `friends` WHERE `friend_id` = ?)
 INNER JOIN
-(SELECT * FROM `users` WHERE `id` IN
-    (SELECT `whom` FROM `friendships` WHERE `who` = ?)
-  OR `id` IN
-    (SELECT `who` FROM `friendships` WHERE `whom` = ?)) `x` ON `u`.`id` = `x`.`id`
+(SELECT * FROM `users` WHERE `user_id` IN
+    (SELECT `friend_id` FROM `friends` WHERE `user_id` = ?)
+  OR `user_id` IN
+    (SELECT `user_id` FROM `friends` WHERE `friend_id` = ?)) `users2` ON `users`.`user_id` = `users2`.`user_id`
 
 -- 8. добавление фильма
-INSERT INTO `films` (`name`, `description`, `release_date`, `duration`, `rating`) VALUES ('Test', '...', '2020-01-01', 3600, 1)
+INSERT INTO `films` (`name`, `description`, `release_date`, `duration`, `mpaa_id`) VALUES ('Test', '...', '2022-05-15', 3600, 1)
 
 -- 9. обновление фильма
-UPDATE `films` SET `description` = 'test' WHERE `id` = ?
+UPDATE `films` SET `description` = 'test' WHERE `film_id` = ?
 
 -- 10. удаление фильма
-DELETE FROM `films` WHERE `id` = ?
+DELETE FROM `films` WHERE `film_id` = ?
 
 -- 11. добавление лайка фильму
 INSERT INTO `likes` (`user_id`, `film_id`) VALUES (?, ?)
@@ -49,15 +49,15 @@ INSERT INTO `likes` (`user_id`, `film_id`) VALUES (?, ?)
 DELETE FROM `likes` WHERE `user_id` = ? AND `film_id` = ?
 
 -- 13. список популярных фильмов
-SELECT `films`.`id`, COUNT(`likes`.`user_id`) `likes_count`
+SELECT `films`.`film_id`, COUNT(`likes`.`user_id`) `likes_count`
 FROM `films`
-LEFT JOIN `likes` ON `films`.`id` = `likes`.`film_id`
-GROUP BY `films`.`id`
+LEFT JOIN `likes` ON `films`.`film_id` = `likes`.`film_id`
+GROUP BY `films`.`film_id`
 ORDER BY `likes_count` DESC
 
 -- 14. поиск жанров фильма
 SELECT *
 FROM `films`
-INNER JOIN `film_genres` ON `film_genres`.`film_id` = `films`.`id`
-INNER JOIN `genres` ON `genres`.`id` = `film_genres`.`genre_id`
+INNER JOIN `film_genres` ON `film_genres`.`film_id` = `films`.`film_id`
+INNER JOIN `genres` ON `genres`.`genre_id` = `film_genres`.`genre_id`
 ```
