@@ -95,7 +95,6 @@ public class UserService {
         User user2 = getUser(friendId);
 
         user1.getFriends().add(user2.getId());
-        user2.getFriends().add(user1.getId());
     }
 
     /**
@@ -110,7 +109,6 @@ public class UserService {
         User user2 = getUser(friendId);
 
         user1.getFriends().remove(user2.getId());
-        user2.getFriends().remove(user1.getId());
     }
 
     /**

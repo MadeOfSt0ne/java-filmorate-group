@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import net.andreinc.jbvext.annotations.date.After;
 
@@ -32,4 +33,7 @@ public class Film {
     Date releaseDate;
 
     Set<Long> whoLikes = new HashSet<>();
+
+    @NonNull
+    MpaRating mpa;
 }
