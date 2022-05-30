@@ -48,7 +48,7 @@ public class UserController {
         return validatedUser;
     }
 
-    @GetMapping("/users/{id}/friends/common/{otherId}")
+    @GetMapping("{id}/friends/common/{otherId}")
     Collection<User> getCommonFriends(@PathVariable final Long id, @PathVariable final Long otherId) {
         return userService.getFriendsIntersection(id, otherId);
     }
