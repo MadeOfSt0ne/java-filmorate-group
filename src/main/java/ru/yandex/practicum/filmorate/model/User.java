@@ -5,9 +5,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import javax.validation.constraints.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDate;
 
 @Value
 @Builder(toBuilder = true)
@@ -27,7 +25,5 @@ public class User {
     @JsonFormat(pattern = "yyyy-MM-dd")
     @NotNull
     @Past
-    Date birthday;
-
-    Set<Long> friends = new HashSet<>();
+    LocalDate birthday;
 }

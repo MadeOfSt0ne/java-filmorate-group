@@ -4,14 +4,11 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import net.andreinc.jbvext.annotations.date.After;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDate;
 
 @Value
 @Builder(toBuilder = true)
@@ -26,14 +23,10 @@ public class Film {
     String description;
 
     @Min(0)
-    long duration;
+    Integer duration;
 
-    @After(value = "1895-12-28", format = "yyyy-MM-dd") // дата не может быть раньше "дня кино".
     @JsonFormat(pattern = "yyyy-MM-dd")
-    Date releaseDate;
+    LocalDate releaseDate;
 
-    Set<Long> whoLikes = new HashSet<>();
-
-    @NonNull
-    MpaRating mpa;
+    @NonNull MpaRating mpa;
 }

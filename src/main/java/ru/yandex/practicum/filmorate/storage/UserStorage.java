@@ -43,9 +43,4 @@ public interface UserStorage {
      * @param user пользователь
      */
     void remove(User user);
-
-    /**
-     * Очищает хранилище.
-     */
-    void clear();
 }

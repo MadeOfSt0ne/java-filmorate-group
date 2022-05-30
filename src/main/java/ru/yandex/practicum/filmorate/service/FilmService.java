@@ -1,24 +1,32 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 /**
  * Класс-сервис для управления фильмами.
  */
 @Service
-@RequiredArgsConstructor
 public class FilmService {
-    private final Comparator<Film> filmLikesComparator = Comparator.comparingInt(film -> film.getWhoLikes().size());
     private final FilmStorage filmStorage;
     private final UserService userService;
+    private final LikeStorage likeStorage;
+
+    @Autowired
+    FilmService(FilmStorage databaseFilmStorage, @Qualifier("databaseFilmStorage") LikeStorage databaseLikeStorage,
+                UserService userService) {
+        this.filmStorage = databaseFilmStorage;
+        this.userService = userService;
+        this.likeStorage = databaseLikeStorage;
+    }
 
     /**
      * Получает все фильмы.
@@ -81,7 +89,7 @@ public class FilmService {
      * @throws NoSuchElementException - если фильма не существует.
      */
     public void addLikeToFilm(final Long id, final Long userId) {
-        getFilm(id).getWhoLikes().add(userService.getUser(userId).getId());
+        likeStorage.save(Like.builder().film(getFilm(id)).user(userService.getUser(userId)).build());
     }
 
     /**
@@ -92,7 +100,7 @@ public class FilmService {
      * @throws NoSuchElementException - если фильма не существует.
      */
     public void removeLikeFromFilm(final Long id, final Long userId) {
-        getFilm(id).getWhoLikes().remove(userService.getUser(userId).getId());
+        likeStorage.delete(Like.builder().film(getFilm(id)).user(userService.getUser(userId)).build());
     }
 
     /**
@@ -102,8 +110,7 @@ public class FilmService {
      * @return коллекция из фильмов
      * @throws NoSuchElementException - если фильма не существует.
      */
-    public Collection<Film> getPopularFilms(final Long count) {
-        return filmStorage.getAll().stream().sorted(filmLikesComparator.reversed()).limit(count == null ? 10 : count)
-                .collect(Collectors.toList());
+    public Collection<Film> getPopularFilms(final Integer count) {
+        return likeStorage.getPopularFilms(count != null ? count : 10);
     }
 }

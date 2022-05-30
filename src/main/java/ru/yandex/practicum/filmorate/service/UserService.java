@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
@@ -15,9 +17,16 @@ import java.util.stream.Collectors;
  * Класс-сервис для управления пользователями.
  */
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+
+    private final FriendshipStorage friendshipStorage;
+
+    @Autowired
+    public UserService(UserStorage databaseUserStorage, FriendshipStorage databaseFriendshipStorage) {
+        this.userStorage = databaseUserStorage;
+        this.friendshipStorage = databaseFriendshipStorage;
+    }
 
     /**
      * Получает всех пользователей.
@@ -80,7 +89,7 @@ public class UserService {
      * @throws NoSuchElementException - если пользователя не существует.
      */
     public Collection<User> getUserFriends(final Long id) {
-        return getUser(id).getFriends().stream().map(userStorage::get).collect(Collectors.toList());
+        return friendshipStorage.getUserFriendsIds(getUser(id).getId()).stream().map(userStorage::get).collect(Collectors.toList());
     }
 
     /**
@@ -94,7 +103,7 @@ public class UserService {
         User user1 = getUser(id);
         User user2 = getUser(friendId);
 
-        user1.getFriends().add(user2.getId());
+        friendshipStorage.save(Friendship.builder().user(user1).friend(user2).build());
     }
 
     /**
@@ -108,7 +117,7 @@ public class UserService {
         User user1 = getUser(id);
         User user2 = getUser(friendId);
 
-        user1.getFriends().remove(user2.getId());
+        friendshipStorage.delete(Friendship.builder().user(user1).friend(user2).build());
     }
 
     /**
@@ -123,8 +132,8 @@ public class UserService {
         User user1 = getUser(id);
         User user2 = getUser(otherId);
 
-        Set<Long> intersection = new HashSet<>(user1.getFriends());
-        intersection.retainAll(user2.getFriends());
+        Set<Long> intersection = new HashSet<>(friendshipStorage.getUserFriendsIds(user1.getId()));
+        intersection.retainAll(friendshipStorage.getUserFriendsIds(user2.getId()));
 
         return intersection.stream().map(userStorage::get).collect(Collectors.toList());
     }
