@@ -1,21 +1,29 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import javax.validation.ConstraintViolationException;
-import java.time.Instant;
-import java.util.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@AutoConfigureTestDatabase
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class FilmControllerTest {
     @Autowired
     private FilmController filmController;
@@ -24,16 +32,14 @@ public class FilmControllerTest {
     private UserController userController;
 
     @Autowired
+    @Qualifier("databaseFilmStorage")
     private FilmStorage filmStorage;
 
-    private final Film film = Film.builder().name("test").description("test").releaseDate(new Date(0L)).build();
+    private final Film film = Film.builder().name("test").description("test").mpa(MpaRating.builder().id(1)
+            .title("G").build()).duration(0).releaseDate(LocalDate.of(1970, 1, 1)).build();
 
-    private final User user = User.builder().login("xx").email("xxxxx@xxxxx.ru").birthday(new Date(0L)).build();
-
-    @AfterEach
-    void tearDown() {
-        filmStorage.clear();
-    }
+    private final User user = User.builder().login("xx").email("xxxxx@xxxxx.ru")
+            .birthday(LocalDate.of(1970, 1, 1)).build();
 
     @Test
     void contextLoads() {
@@ -65,14 +71,9 @@ public class FilmControllerTest {
     }
 
     @Test
-    void testCreateFilmWithNegativeId() {
-        assertThrows(ValidationException.class, () -> filmController.create(film.toBuilder().id(-1L).build()));
-    }
-
-    @Test
     void testCreateFilmWithIncorrectDate() {
-        assertThrows(ConstraintViolationException.class, () -> filmController.create(film.toBuilder()
-                .releaseDate(Date.from(Instant.parse("1700-01-01T00:00:00.00Z"))).build()));
+        assertThrows(ValidationException.class, () -> filmController.create(film.toBuilder()
+                .releaseDate(LocalDate.of(1700, 1, 1)).build()));
     }
 
     @Test
@@ -113,9 +114,10 @@ public class FilmControllerTest {
     @Test
     void testAddLikeToFilm() {
         final Film film1 = filmController.create(film);
+        final Film film2 = filmController.create(film);
         final User user1 = userController.create(user);
-        filmController.addLike(film1.getId(), user1.getId());
-        assertEquals(List.of(user1.getId()), new ArrayList<>(filmController.get(film1.getId()).getWhoLikes()));
+        filmController.addLike(film2.getId(), user1.getId());
+        assertEquals(film2, filmController.getPopular(1).stream().findFirst().orElse(null));
     }
 
     @Test
@@ -126,10 +128,11 @@ public class FilmControllerTest {
     @Test
     void testRemoveLikeFromFilm() {
         final Film film1 = filmController.create(film);
+        final Film film2 = filmController.create(film);
         final User user1 = userController.create(user);
         filmController.addLike(film1.getId(), user1.getId());
         filmController.removeLike(film1.getId(), user1.getId());
-        assertEquals(Collections.EMPTY_LIST, new ArrayList<>(filmController.get(film1.getId()).getWhoLikes()));
+        assertEquals(film1, filmController.getPopular(1).stream().findFirst().orElse(null));
     }
 
     @Test
@@ -138,6 +141,6 @@ public class FilmControllerTest {
         final Film film2 = filmController.create(film.toBuilder().name("test2").build());
         final User user1 = userController.create(user);
         filmController.addLike(film2.getId(), user1.getId());
-        assertEquals(List.of(film2), filmController.getPopular(1L));
+        assertEquals(List.of(film2), filmController.getPopular(1));
     }
 }

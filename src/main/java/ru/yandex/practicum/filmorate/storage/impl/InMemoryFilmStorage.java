@@ -1,16 +1,20 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Like;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Реализация интерфейса хранилища фильмов, с хранением в оперативной памяти.
  */
 @Component
-public class InMemoryFilmStorage implements FilmStorage {
+public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
+    private final Map<Long, Set<Long>> likes = new HashMap<>();
     private final HashMap<Long, Film> films = new HashMap<>();
 
     /**
@@ -65,10 +69,38 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     /**
-     * Очищает хранилище.
+     * Возвращает список фильмов отсортированный по кол-ву лайков.
+     *
+     * @param limit максимальный раз списка фильмов
+     * @return отсортированная коллекция фильмов
      */
     @Override
-    public void clear() {
-        films.clear();
+    public Collection<Film> getPopularFilms(Integer limit) {
+        final Comparator<Film> comparator = Comparator.comparingInt(x -> likes.getOrDefault(x.getId(),
+                new HashSet<>()).size());
+
+        return films.values().stream().sorted(comparator.reversed()).limit(limit).collect(Collectors.toList());
+    }
+
+    /**
+     * Добавляет лайк в хранилище.
+     *
+     * @param like лайк
+     */
+    @Override
+    public void save(Like like) {
+        Set<Long> whoLikes = likes.getOrDefault(like.getFilm().getId(), new HashSet<>());
+        whoLikes.add(like.getUser().getId());
+        likes.put(like.getFilm().getId(), whoLikes);
+    }
+
+    /**
+     * Удаляет лайк из хранилища.
+     *
+     * @param like лайк
+     */
+    @Override
+    public void delete(Like like) {
+        likes.get(like.getFilm().getId()).remove(like.getUser().getId());
     }
 }
