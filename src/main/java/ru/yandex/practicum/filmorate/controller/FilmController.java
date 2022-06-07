@@ -66,7 +66,7 @@ public class FilmController {
     }
 
     @GetMapping("/search?query={substring}&by={title}")
-    Collection<Film> searchFilm(@PathVariable final String substring, @PathVariable final String title) {
-        return filmService.searchFilm(substring, title);
+    Collection<Film> searchFilmByTitle(@PathVariable final String substring, @PathVariable final String title) {
+        return filmService.searchFilmByTitle(substring, title);
     }
 }

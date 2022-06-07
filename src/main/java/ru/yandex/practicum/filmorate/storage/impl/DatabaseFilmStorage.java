@@ -118,12 +118,17 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
         jdbcTemplate.update(sql, film.getId());
     }
 
+    /**
+     * Поиск фильма по фрагменту названия независимо от регистра.
+     *
+     * @param str фрагмент
+     * */
     @Override
-    public Collection<Film> searchFilm(String str) {
+    public Collection<Film> searchFilmByTitle(String str) {
         final String slqSearch = "SELECT * FROM films AS f LEFT OUTER JOIN " +
                 "(SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
                 "AS l ON f.film_id = l.film_id LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
-                "WHERE f.name LIKE CONCAT('%', ?, '%')" +
+                "WHERE f.name ILIKE CONCAT('%', ?, '%')" +
                 "ORDER BY l.likes_count DESC;";
 
         final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();

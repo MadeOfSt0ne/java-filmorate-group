@@ -150,6 +150,6 @@ public class FilmControllerTest {
         final Film film2 = filmController.create(film.toBuilder().name("Terminator").build());
         final User user1 = userController.create(user);
         filmController.addLike(film2.getId(), user1.getId());
-        assertEquals(List.of(film2), filmController.searchFilm("ina", "title"));
+        assertEquals(List.of(film2), filmController.searchFilmByTitle("tERm", "title"));
     }
 }

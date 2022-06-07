@@ -49,5 +49,5 @@ public interface FilmStorage {
      *
      * @param str фрагмент
      */
-    Collection<Film> searchFilm(String str);
+    Collection<Film> searchFilmByTitle(String str);
 }

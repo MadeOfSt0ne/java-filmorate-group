@@ -68,9 +68,14 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
         films.remove(film.getId());
     }
 
+    /**
+     * Реализация метода поиска фильма в inMemory не требуется, поэтому метод возвращает ошибку.
+     *
+     * @param str фрагмент названия
+     */
     @Override
-    public Collection<Film> searchFilm(String str) {
-        return null;
+    public Collection<Film> searchFilmByTitle(String str) {
+        throw new UnsupportedOperationException();
     }
 
     /**
