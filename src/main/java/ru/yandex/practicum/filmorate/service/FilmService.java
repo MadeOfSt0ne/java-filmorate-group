@@ -113,4 +113,11 @@ public class FilmService {
     public Collection<Film> getPopularFilms(final Integer count) {
         return likeStorage.getPopularFilms(count != null ? count : 10);
     }
+
+    public Collection<Film> searchFilmByTitle(final String substring, final String title) {
+        if (substring == null || !title.equals("title")) {
+            return null;
+        }
+        return filmStorage.searchFilmByTitle(substring);
+    }
 }

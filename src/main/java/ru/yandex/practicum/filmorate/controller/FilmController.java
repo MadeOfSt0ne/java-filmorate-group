@@ -69,4 +69,9 @@ public class FilmController {
         log.info("USER ({}) DON'T LIKE FILM ({})", userId, id);
         filmService.removeLikeFromFilm(id, userId);
     }
+
+    @GetMapping("/search?query={substring}&by={title}")
+    Collection<Film> searchFilmByTitle(@PathVariable final String substring, @PathVariable final String title) {
+        return filmService.searchFilmByTitle(substring, title);
+    }
 }

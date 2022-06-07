@@ -143,4 +143,13 @@ public class FilmControllerTest {
         filmController.addLike(film2.getId(), user1.getId());
         assertEquals(List.of(film2), filmController.getPopular(1));
     }
+
+    @Test
+    void testSearchFilmByFragmentOfName() {
+        final Film film1 = filmController.create(film);
+        final Film film2 = filmController.create(film.toBuilder().name("Terminator").build());
+        final User user1 = userController.create(user);
+        filmController.addLike(film2.getId(), user1.getId());
+        assertEquals(List.of(film2), filmController.searchFilmByTitle("tERm", "title"));
+    }
 }

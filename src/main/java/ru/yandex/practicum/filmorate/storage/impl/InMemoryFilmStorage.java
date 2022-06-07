@@ -69,6 +69,16 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
     }
 
     /**
+     * Реализация метода поиска фильма в inMemory не требуется, поэтому метод возвращает ошибку.
+     *
+     * @param str фрагмент названия
+     */
+    @Override
+    public Collection<Film> searchFilmByTitle(String str) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Возвращает список фильмов отсортированный по кол-ву лайков.
      *
      * @param limit максимальный раз списка фильмов
