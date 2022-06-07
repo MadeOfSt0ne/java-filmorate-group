@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
@@ -115,6 +116,22 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     public void remove(Film film) {
         final String sql = "DELETE FROM films WHERE film_id = ?";
         jdbcTemplate.update(sql, film.getId());
+    }
+
+    @Override
+    public Collection<Film> searchFilm(String str) {
+        final String slqSearch = "SELECT * FROM films AS f LEFT OUTER JOIN " +
+                "(SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
+                "AS l ON f.film_id = l.film_id LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
+                "WHERE f.name LIKE CONCAT('%', ?, '%')" +
+                "ORDER BY l.likes_count DESC;";
+
+        final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();
+
+        return jdbcTemplate.query(slqSearch, (rs, rowNum) -> {
+            final Long filmId = rs.getLong("film_id");
+            return mapRowToFilm(rs, filmsGenres.get(filmId));
+        }, str);
     }
 
     /**

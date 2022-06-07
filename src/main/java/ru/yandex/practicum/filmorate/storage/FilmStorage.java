@@ -43,4 +43,11 @@ public interface FilmStorage {
      * @param film фильм
      */
     void remove(Film film);
+
+    /**
+     * Поиск фильма по фрагменту названия
+     *
+     * @param str фрагмент
+     */
+    Collection<Film> searchFilm(String str);
 }

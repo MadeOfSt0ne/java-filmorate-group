@@ -68,6 +68,11 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
         films.remove(film.getId());
     }
 
+    @Override
+    public Collection<Film> searchFilm(String str) {
+        return null;
+    }
+
     /**
      * Возвращает список фильмов отсортированный по кол-ву лайков.
      *
