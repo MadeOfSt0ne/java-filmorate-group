@@ -48,6 +48,11 @@ public class FilmController {
         return validatedFilm;
     }
 
+    @DeleteMapping("{id}")
+    void delete(@PathVariable final Long id) {
+        filmService.removeFilm(id);
+    }
+
     @GetMapping("/popular")
     Collection<Film> getPopular(@RequestParam(required = false) final Integer count) {
         return filmService.getPopularFilms(count);
