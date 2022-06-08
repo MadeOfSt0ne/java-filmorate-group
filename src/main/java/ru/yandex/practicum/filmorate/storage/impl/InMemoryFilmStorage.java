@@ -93,6 +93,16 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
     }
 
     /**
+     * Возвращает лайки всех пользователей сгруппированные по идентификатору пользователя. НЕ РЕАЛИЗОВАН.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public Map<Long, Set<Long>> getUsersLikesMap() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Добавляет лайк в хранилище.
      *
      * @param like лайк
