@@ -56,3 +56,23 @@ CREATE TABLE IF NOT EXISTS likes
     FOREIGN KEY (film_id) REFERENCES films (film_id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, film_id)
 );
+
+CREATE TABLE IF NOT EXISTS review
+(
+    review_id  LONG auto_increment NOT NULL PRIMARY KEY,
+    content    VARCHAR(255)          NOT NULL,
+    is_positive BOOLEAN              NOT NULL,
+    user_id BIGINT NOT NULL,
+    film_id BIGINT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+    FOREIGN KEY (film_id) REFERENCES films (film_id) ON DELETE CASCADE
+    );
+
+CREATE TABLE IF NOT EXISTS review_like
+(
+    is_useful BOOLEAN              NOT NULL,
+    user_id BIGINT NOT NULL,
+    review_id LONG NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+    FOREIGN KEY (review_id) REFERENCES review (review_id) ON DELETE CASCADE
+    );
