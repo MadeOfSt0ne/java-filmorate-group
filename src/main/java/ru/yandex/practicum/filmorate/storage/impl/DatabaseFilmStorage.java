@@ -4,15 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Like;
-import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -148,6 +146,7 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     public void save(Like like) {
         final String sql = "INSERT INTO likes (user_id, film_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, like.getUser().getId(), like.getFilm().getId());
+        addToHistory(like, EventType.LIKE);
     }
 
     /**
@@ -160,6 +159,7 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     public void delete(Like like) {
         final String sql = "DELETE FROM likes WHERE user_id = ? AND film_id = ?";
         jdbcTemplate.update(sql, like.getUser().getId(), like.getFilm().getId());
+        addToHistory(like, EventType.LIKE);
     }
 
     private Map<Long, Set<Genre>> getAllFilmsGenres() {
@@ -194,5 +194,9 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
                 .genres(genres != null && genres.isEmpty() ? null : genres)
                 .mpa(MpaRating.builder().id(rs.getInt("mpa_id")).title(rs.getString("title")).build())
                 .build();
+    }
+    private void addToHistory(Like like, EventType eventType){
+        jdbcTemplate.update("INSERT INTO history (USER_ID, EVENT_TYPE, TIME_STAMP, ENTITY_ID) VALUES (?, ?, ?, ?)",
+                like.getUser().getId(), eventType.toString(), Instant.now().toEpochMilli(), like.getFilm().getId());
     }
 }

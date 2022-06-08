@@ -3,10 +3,12 @@ package ru.yandex.practicum.filmorate.storage.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.Collection;
 
 /**
@@ -40,6 +42,7 @@ public class DatabaseFriendshipStorage implements FriendshipStorage {
     public void save(Friendship friendship) {
         final String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, friendship.getUser().getId(), friendship.getFriend().getId());
+        addToHistory(friendship, EventType.FRIEND);
     }
 
     /**
@@ -52,5 +55,10 @@ public class DatabaseFriendshipStorage implements FriendshipStorage {
     public void delete(Friendship friendship) {
         final String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, friendship.getUser().getId(), friendship.getFriend().getId());
+        addToHistory(friendship, EventType.FRIEND);
+    }
+    private void addToHistory(Friendship friendship, EventType eventType){
+        jdbcTemplate.update("INSERT INTO history (USER_ID, EVENT_TYPE, TIME_STAMP, ENTITY_ID) VALUES (?, ?, ?, ?)",
+                friendship.getUser().getId(), eventType.toString(), Instant.now().toEpochMilli(), friendship.getFriend().getId());
     }
 }

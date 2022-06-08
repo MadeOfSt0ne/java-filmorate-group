@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.History;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.validator.UserValidator;
@@ -68,5 +69,10 @@ public class UserController {
     void deleteFriends(@PathVariable final Long id, @PathVariable final Long friendId) {
         log.info("USER ({}) REMOVES USER ({}) FROM FRIENDS", id, friendId);
         userService.deleteFriends(id, friendId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<History> getHistory(@PathVariable("id") Long id){
+        return userService.getHistory(id);
     }
 }
