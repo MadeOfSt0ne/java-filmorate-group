@@ -20,6 +20,13 @@ public interface LikeStorage {
     Collection<Film> getPopularFilms(Integer limit);
 
     /**
+     * Возвращает фильмы, которые лайкнул пользователь.
+     *
+     * @param id id пользователя
+     */
+    Collection<Film> getPopularFilmByUserId(Long id);
+
+    /**
      * Добавляет лайк в хранилище.
      *
      * @param like лайк

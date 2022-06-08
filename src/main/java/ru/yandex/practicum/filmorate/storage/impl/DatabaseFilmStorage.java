@@ -160,6 +160,21 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
         }, limit);
     }
 
+    @Override
+    public Collection<Film> getPopularFilmByUserId(Long id) {
+        final String sql = "SELECT * FROM films AS f LEFT OUTER JOIN " +
+                "(SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
+                "AS l ON f.film_id = l.film_id LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
+                "WHERE user_id = ?" +
+                "ORDER BY l.likes_count DESC;";
+        final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();
+
+        return jdbcTemplate.query(sql, (rs, numRow) -> {
+                    final Long filmId = rs.getLong("film_id");
+                    return mapRowToFilm(rs, filmsGenres.get(filmId));
+                });
+    }
+
     /**
      * Добавляет лайк в хранилище.
      *
