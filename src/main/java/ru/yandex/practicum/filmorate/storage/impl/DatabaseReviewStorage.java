@@ -69,16 +69,6 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
         return jdbcTemplate.query(query, this::mapRowToReview, filmId);
     }
 
-    private Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
-        return Review.builder()
-                .reviewId(resultSet.getLong("review_id"))
-                .content(resultSet.getString("content"))
-                .isPositive(resultSet.getBoolean("is_positive"))
-                .userId(resultSet.getLong("user_id"))
-                .filmId(resultSet.getLong("film_id"))
-                .build();
-    }
-
     @Override
     public void saveLike(LikeReview likeReview) {
         String query = "INSERT INTO review_like (user_id, review_id, is_useful) VALUES (?, ?, ?)";
@@ -94,10 +84,11 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
 
     @Override
     public LikeReview getCountLike(Long reviewId) {
-        String query = "SELECT t1.review_id, (t1.count-t2.count) AS useful" +
-                " FROM (SELECT COUNT(*) FROM review_like WHERE is_useful=TRUE AND review_id=?)" +
-                " AS t1 JOIN (SELECT COUNT(*) FROM review_like WHERE is_useful=FALSE AND review_id=?) " +
-                " AS t2 ON (t1.review_id=t2.review_id))";
+        String query = "SELECT t1.review_id, (t1.count-t2.count) AS useful " +
+                "FROM (SELECT COUNT(review_id), review_id FROM review_like WHERE is_useful=TRUE GROUP BY review_id) " +
+                "AS t1 FULL OUTER JOIN(SELECT COUNT(review_id), review_id FROM review_like WHERE is_useful=FALSE GROUP BY review_id) " +
+                "AS t2 ON(t1.review_id=t2.review_id) " +
+                "WHERE t1.review_id=?;";
         return jdbcTemplate.queryForObject(query, this::mapRowToLikeReview, reviewId);
     }
 
@@ -105,6 +96,16 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
         return LikeReview.builder()
                 .reviewId(resultSet.getLong("review_id"))
                 .useful(resultSet.getInt("useful"))
+                .build();
+    }
+
+    private Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
+        return Review.builder()
+                .reviewId(resultSet.getLong("review_id"))
+                .content(resultSet.getString("content"))
+                .isPositive(resultSet.getBoolean("is_positive"))
+                .userId(resultSet.getLong("user_id"))
+                .filmId(resultSet.getLong("film_id"))
                 .build();
     }
 }

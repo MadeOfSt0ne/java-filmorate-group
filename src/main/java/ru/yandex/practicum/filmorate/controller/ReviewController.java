@@ -2,14 +2,17 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
 @RestController
+@Validated
 @RequestMapping("/reviews")
 public class ReviewController {
 
@@ -21,13 +24,13 @@ public class ReviewController {
     }
 
     @PostMapping
-    Review create(Review review) {
+    Review create(@Valid Review review) {
         log.info("CREATE {}", review);
         return reviewService.addNewReview(review);
     }
 
     @PutMapping
-    void update(Review review) {
+    void update(@Valid Review review) {
         log.info("UPDATE {}", review);
         reviewService.updateReview(review);
     }
