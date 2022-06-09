@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -162,17 +162,13 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
 
     @Override
     public Collection<Film> getPopularFilmByUserId(Long id) {
-        final String sql = "SELECT * FROM films AS f LEFT OUTER JOIN " +
-                "(SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
-                "AS l ON f.film_id = l.film_id LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
-                "WHERE user_id = ?" +
-                "ORDER BY l.likes_count DESC;";
-        final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();
-
-        return jdbcTemplate.query(sql, (rs, numRow) -> {
-                    final Long filmId = rs.getLong("film_id");
-                    return mapRowToFilm(rs, filmsGenres.get(filmId));
-                });
+        final String sql = "SELECT * FROM films " +
+                "LEFT JOIN mpa ON films.mpa_id = mpa.mpa_id " +
+                "LEFT JOIN (SELECT film_id, user_id, COUNT(*) likes_count FROM likes GROUP BY user_id, film_id)" +
+                " l ON films.film_id = l.film_id " +
+                "WHERE l.user_id = ?";
+        List<Film> films = jdbcTemplate.query(sql, (rs, numRow) -> mapRowToFilm(rs, getFilmGenresById(id)), id);
+        return new HashSet<>(films);
     }
 
     /**

@@ -152,4 +152,20 @@ public class FilmControllerTest {
         filmController.addLike(film2.getId(), user1.getId());
         assertEquals(List.of(film2), filmController.searchFilmByTitle("tERm", "title"));
     }
+
+    @Test
+    void testGetCommonPopularFilms() {
+        final Film film1 = filmController.create(film);
+        final Film film2 = filmController.create(film.toBuilder().name("test2").build());
+        final User user1 = userController.create(user);
+
+        final User user2 = User.builder().login("testLogin").email("test@test.ru")
+                .birthday(LocalDate.of(1970, 1, 1)).build();
+        final User user3 = userController.create(user2);
+
+        filmController.addLike(film1.getId(), user1.getId());
+        filmController.addLike(film1.getId(), user3.getId());
+        filmController.addLike(film2.getId(), user3.getId());
+        assertEquals(1, filmController.getCommonPopularFilms(user1.getId(), user3.getId()).size());
+    }
 }

@@ -124,6 +124,9 @@ public class FilmService {
     }
 
     public Collection<Film> getCommonPopular(final Long userId, final Long friendId) {
+        if (userService.getUser(userId) == null || userService.getUser(friendId) == null) {
+            return null;
+        }
         Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
         intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
         return intersection;
