@@ -168,8 +168,13 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
                 " l ON films.film_id = l.film_id " +
                 "WHERE l.user_id = ? " +
                 "ORDER BY l.likes_count DESC;";
-        List<Film> films = jdbcTemplate.query(sql, (rs, numRow) -> mapRowToFilm(rs, getFilmGenresById(id)), id);
-        return new HashSet<>(films);
+
+        final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();
+
+        return jdbcTemplate.query(sql, (rs, numRow) -> {
+            final Long filmId = rs.getLong("film_id");
+            return mapRowToFilm(rs, filmsGenres.get(filmId));
+        }, id);
     }
 
     /**
