@@ -57,32 +57,4 @@ class ReviewControllerTest {
         Review review1 = reviewController.create(review);
         assertEquals(review1, reviewController.get(review1.getReviewId()));
     }
-
-    @Test
-    void update() {
-    }
-
-    @Test
-    void get() {
-    }
-
-    @Test
-    void getAllByFilm() {
-    }
-
-    @Test
-    void addLike() {
-    }
-
-    @Test
-    void addDisLike() {
-    }
-
-    @Test
-    void removeLike() {
-    }
-
-    @Test
-    void removeDisLike() {
-    }
 }

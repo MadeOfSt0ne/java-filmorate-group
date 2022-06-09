@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 
 @Component
 public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
@@ -85,11 +86,17 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
     @Override
     public LikeReview getCountLike(Long reviewId) {
         String query = "SELECT t1.review_id, (t1.count-t2.count) AS useful " +
-                "FROM (SELECT COUNT(review_id), review_id FROM review_like WHERE is_useful=TRUE GROUP BY review_id) " +
-                "AS t1 FULL OUTER JOIN(SELECT COUNT(review_id), review_id FROM review_like WHERE is_useful=FALSE GROUP BY review_id) " +
+                "FROM (SELECT COUNT(review_id) as count, review_id FROM review_like WHERE is_useful=TRUE GROUP BY review_id) " +
+                "AS t1  LEFT JOIN(SELECT COUNT(review_id) as count, review_id FROM review_like WHERE is_useful=FALSE GROUP BY review_id) " +
                 "AS t2 ON(t1.review_id=t2.review_id) " +
                 "WHERE t1.review_id=?;";
-        return jdbcTemplate.queryForObject(query, this::mapRowToLikeReview, reviewId);
+        List<LikeReview> list = jdbcTemplate.query(query, this::mapRowToLikeReview, reviewId);
+        if(list.size()>0){
+            return list.get(0);
+        }else{
+
+            return LikeReview.builder().reviewId(reviewId).useful(0).build();
+        }
     }
 
     private LikeReview mapRowToLikeReview(ResultSet resultSet, int rowNum) throws SQLException {
