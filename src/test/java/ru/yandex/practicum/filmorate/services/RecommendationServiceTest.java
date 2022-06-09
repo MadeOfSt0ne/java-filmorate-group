@@ -62,8 +62,6 @@ class RecommendationServiceTest {
 
         filmService.addLikeToFilm(0L, 2L);
 
-        recommendationService.compute(5);
-
         assertEquals(List.of(films.get(1), films.get(2)), recommendationService.getFilmRecommendationsByUserId(2L));
     }
 

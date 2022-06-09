@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.events.FilmLikeAddedEvent;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Recommendation;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
@@ -84,5 +86,10 @@ public class RecommendationService {
     public List<Film> getFilmRecommendationsByUserId(Long id) {
         return recommendationStorage.getRecommendationByUserId(id).getFilmsIds().stream().map(filmService::getFilm)
                 .collect(Collectors.toList());
+    }
+
+    @EventListener
+    public void handleFilmLikeAdded(FilmLikeAddedEvent event) {
+        this.compute(5);
     }
 }
