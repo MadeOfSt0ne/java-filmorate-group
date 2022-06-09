@@ -166,7 +166,8 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
                 "LEFT JOIN mpa ON films.mpa_id = mpa.mpa_id " +
                 "LEFT JOIN (SELECT film_id, user_id, COUNT(*) likes_count FROM likes GROUP BY user_id, film_id)" +
                 " l ON films.film_id = l.film_id " +
-                "WHERE l.user_id = ?";
+                "WHERE l.user_id = ? " +
+                "ORDER BY l.likes_count DESC;";
         List<Film> films = jdbcTemplate.query(sql, (rs, numRow) -> mapRowToFilm(rs, getFilmGenresById(id)), id);
         return new HashSet<>(films);
     }
