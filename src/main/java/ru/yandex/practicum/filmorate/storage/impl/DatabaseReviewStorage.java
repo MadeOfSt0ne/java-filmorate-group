@@ -5,6 +5,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.LikeReview;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
@@ -13,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,6 +41,7 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
             return stmt;
         }, keyHolder);
         review.setReviewId(keyHolder.getKey().longValue());
+        addEvent(review, EventType.REVIEW, EventType.ADD);
         return review;
     }
 
@@ -56,6 +60,7 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
                 review.getUserId(),
                 review.getFilmId(),
                 review.getReviewId());
+        addEvent(review, EventType.REVIEW, EventType.UPDATE);
     }
 
     @Override
@@ -113,5 +118,14 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
                 .userId(resultSet.getLong("user_id"))
                 .filmId(resultSet.getLong("film_id"))
                 .build();
+    }
+    private void addEvent(Review review, EventType eventType, EventType eventOperation) {
+        jdbcTemplate.update("INSERT INTO events (USER_ID, EVENT_TYPE, OPERATION, TIME_STAMP, ENTITY_ID) " +
+                        "VALUES (?, ?, ?, ?, ?)",
+                review.getUserId(),
+                eventType.toString(),
+                eventOperation.toString(),
+                Instant.now().toEpochMilli(),
+                review.getFilmId());
     }
 }
