@@ -24,13 +24,13 @@ public class ReviewController {
     }
 
     @PostMapping
-    Review create(@Valid Review review) {
+    Review create(@Valid @RequestBody Review review) {
         log.info("CREATE {}", review);
         return reviewService.addNewReview(review);
     }
 
     @PutMapping
-    void update(@Valid Review review) {
+    void update(@Valid @RequestBody Review review) {
         log.info("UPDATE {}", review);
         reviewService.updateReview(review);
     }
