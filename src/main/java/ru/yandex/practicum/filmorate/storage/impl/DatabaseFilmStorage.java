@@ -155,17 +155,19 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
 
     @Override
     public Collection<Film> getPopularFilmByUserId(Long id) {
-        final String sql = "SELECT * FROM films AS f LEFT OUTER JOIN " +
-                "(SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
-                "AS l ON f.film_id = l.film_id LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
-                "WHERE user_id = ?" +
+        final String sql = "SELECT * FROM films " +
+                "LEFT JOIN mpa ON films.mpa_id = mpa.mpa_id " +
+                "LEFT JOIN (SELECT film_id, user_id, COUNT(*) likes_count FROM likes GROUP BY user_id, film_id)" +
+                " l ON films.film_id = l.film_id " +
+                "WHERE l.user_id = ? " +
                 "ORDER BY l.likes_count DESC;";
+
         final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();
 
         return jdbcTemplate.query(sql, (rs, numRow) -> {
             final Long filmId = rs.getLong("film_id");
             return mapRowToFilm(rs, filmsGenres.get(filmId));
-        });
+        }, id);
     }
 
     /**

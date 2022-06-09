@@ -10,10 +10,7 @@ import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Класс-сервис для управления фильмами.
@@ -133,8 +130,16 @@ public class FilmService {
     }
 
     public Collection<Film> getCommonPopular(final Long userId, final Long friendId) {
-        Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
-        intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
-        return intersection;
+        if (userService.getUser(userId) == null || userService.getUser(friendId) == null) {
+            throw new NoSuchElementException();
+        }
+        if (userService.getUserFriends(userId).contains(userService.getUser(friendId)) ||
+                userService.getUserFriends(friendId).contains(userService.getUser(userId))) {
+
+            Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
+            intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
+            return intersection;
+        } else
+            return new ArrayList<>();
     }
 }
