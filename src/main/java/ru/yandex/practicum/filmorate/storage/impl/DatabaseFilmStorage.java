@@ -4,15 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Like;
-import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -159,6 +157,21 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
         }, limit);
     }
 
+    @Override
+    public Collection<Film> getPopularFilmByUserId(Long id) {
+        final String sql = "SELECT * FROM films AS f LEFT OUTER JOIN " +
+                "(SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
+                "AS l ON f.film_id = l.film_id LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
+                "WHERE user_id = ?" +
+                "ORDER BY l.likes_count DESC;";
+        final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();
+
+        return jdbcTemplate.query(sql, (rs, numRow) -> {
+                    final Long filmId = rs.getLong("film_id");
+                    return mapRowToFilm(rs, filmsGenres.get(filmId));
+                });
+    }
+
     /**
      * Возвращает лайки всех пользователей сгруппированные по идентификатору пользователя.
      *
@@ -192,6 +205,7 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     public void save(Like like) {
         final String sql = "INSERT INTO likes (user_id, film_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, like.getUser().getId(), like.getFilm().getId());
+        addEvent(like, EventType.LIKE, EventType.ADD);
     }
 
     /**
@@ -204,6 +218,7 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     public void delete(Like like) {
         final String sql = "DELETE FROM likes WHERE user_id = ? AND film_id = ?";
         jdbcTemplate.update(sql, like.getUser().getId(), like.getFilm().getId());
+        addEvent(like, EventType.LIKE, EventType.REMOVE);
     }
 
     private Map<Long, Set<Genre>> getAllFilmsGenres() {
@@ -238,5 +253,14 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
                 .genres(genres != null && genres.isEmpty() ? null : genres)
                 .mpa(MpaRating.builder().id(rs.getInt("mpa_id")).title(rs.getString("title")).build())
                 .build();
+    }
+    private void addEvent(Like like, EventType eventType, EventType eventOperation){
+        jdbcTemplate.update("INSERT INTO events (USER_ID, EVENT_TYPE, OPERATION, TIME_STAMP, ENTITY_ID) " +
+                        "VALUES (?, ?, ?, ?, ?)",
+                like.getUser().getId(),
+                eventType.toString(),
+                eventOperation.toString(),
+                Instant.now().toEpochMilli(),
+                like.getFilm().getId());
     }
 }

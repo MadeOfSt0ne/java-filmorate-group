@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
+import ru.yandex.practicum.filmorate.storage.EventsStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
@@ -23,7 +24,8 @@ public class UserService {
     private final FriendshipStorage friendshipStorage;
 
     @Autowired
-    public UserService(UserStorage databaseUserStorage, FriendshipStorage databaseFriendshipStorage) {
+    public UserService(UserStorage databaseUserStorage,
+                       FriendshipStorage databaseFriendshipStorage) {
         this.userStorage = databaseUserStorage;
         this.friendshipStorage = databaseFriendshipStorage;
     }

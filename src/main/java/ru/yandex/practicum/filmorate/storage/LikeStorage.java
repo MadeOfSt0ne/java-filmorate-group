@@ -4,8 +4,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Интерфейс для хранилища лайков. Предполагает совместное использование с интерфейсом FilmStorage.
@@ -20,6 +18,13 @@ public interface LikeStorage {
      * @return отсортированная коллекция фильмов
      */
     Collection<Film> getPopularFilms(Integer limit);
+
+    /**
+     * Возвращает фильмы, которые лайкнул пользователь.
+     *
+     * @param id id пользователя
+     */
+    Collection<Film> getPopularFilmByUserId(Long id);
 
     /**
      * Возвращает лайки всех пользователей сгруппированные по идентификатору пользователя.

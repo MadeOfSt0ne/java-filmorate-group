@@ -93,6 +93,19 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
     }
 
     /**
+     * Возвращает фильмы, которые лайкнул пользователь
+     *
+     * @param id id пользователя
+     */
+    @Override
+    public Collection<Film> getPopularFilmByUserId(Long id) {
+        HashMap<Long, Set<Long>> whoLikes = new HashMap<>(likes);
+        whoLikes.values().removeIf(userSet -> !userSet.contains(id));
+
+        return whoLikes.keySet().stream().map(films::get).collect(Collectors.toList());
+    }
+
+    /**
      * Возвращает лайки всех пользователей сгруппированные по идентификатору пользователя. НЕ РЕАЛИЗОВАН.
      *
      * @throws UnsupportedOperationException
