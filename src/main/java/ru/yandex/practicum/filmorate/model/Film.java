@@ -29,7 +29,8 @@ public class Film {
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate releaseDate;
 
-    @NonNull MpaRating mpa;
+    @NonNull
+    MpaRating mpa;
 
     Set<Genre> genres;
 }

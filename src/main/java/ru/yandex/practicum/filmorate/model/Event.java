@@ -5,10 +5,11 @@ import lombok.Data;
 
 @Data
 @Builder
-public class History {
+public class Event {
     private Long eventId;
     private Long userId;
     private String eventType;
+    private String operation;
     private Long timestamp;
     private Long entityId;
 }

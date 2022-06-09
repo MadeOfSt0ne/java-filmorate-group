@@ -3,10 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Friendship;
-import ru.yandex.practicum.filmorate.model.History;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
-import ru.yandex.practicum.filmorate.storage.HistoryStorage;
+import ru.yandex.practicum.filmorate.storage.EventsStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
@@ -23,15 +22,12 @@ public class UserService {
     private final UserStorage userStorage;
 
     private final FriendshipStorage friendshipStorage;
-    private final HistoryStorage historyStorage;
 
     @Autowired
     public UserService(UserStorage databaseUserStorage,
-                       FriendshipStorage databaseFriendshipStorage,
-                       HistoryStorage historyStorage) {
+                       FriendshipStorage databaseFriendshipStorage) {
         this.userStorage = databaseUserStorage;
         this.friendshipStorage = databaseFriendshipStorage;
-        this.historyStorage = historyStorage;
     }
 
     /**
@@ -142,8 +138,5 @@ public class UserService {
         intersection.retainAll(friendshipStorage.getUserFriendsIds(user2.getId()));
 
         return intersection.stream().map(userStorage::get).collect(Collectors.toList());
-    }
-    public Collection<History> getHistory(Long id) {
-        return historyStorage.getHistory(id);
     }
 }

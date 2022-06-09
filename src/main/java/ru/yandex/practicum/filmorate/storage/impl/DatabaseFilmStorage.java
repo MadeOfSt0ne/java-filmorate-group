@@ -146,7 +146,7 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     public void save(Like like) {
         final String sql = "INSERT INTO likes (user_id, film_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, like.getUser().getId(), like.getFilm().getId());
-        addToHistory(like, EventType.LIKE);
+        addEvent(like, EventType.LIKE, EventType.ADD);
     }
 
     /**
@@ -159,7 +159,7 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     public void delete(Like like) {
         final String sql = "DELETE FROM likes WHERE user_id = ? AND film_id = ?";
         jdbcTemplate.update(sql, like.getUser().getId(), like.getFilm().getId());
-        addToHistory(like, EventType.LIKE);
+        addEvent(like, EventType.LIKE, EventType.REMOVE);
     }
 
     private Map<Long, Set<Genre>> getAllFilmsGenres() {
@@ -195,8 +195,13 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
                 .mpa(MpaRating.builder().id(rs.getInt("mpa_id")).title(rs.getString("title")).build())
                 .build();
     }
-    private void addToHistory(Like like, EventType eventType){
-        jdbcTemplate.update("INSERT INTO history (USER_ID, EVENT_TYPE, TIME_STAMP, ENTITY_ID) VALUES (?, ?, ?, ?)",
-                like.getUser().getId(), eventType.toString(), Instant.now().toEpochMilli(), like.getFilm().getId());
+    private void addEvent(Like like, EventType eventType, EventType eventOperation){
+        jdbcTemplate.update("INSERT INTO events (USER_ID, EVENT_TYPE, OPERATION, TIME_STAMP, ENTITY_ID) " +
+                        "VALUES (?, ?, ?, ?, ?)",
+                like.getUser().getId(),
+                eventType.toString(),
+                eventOperation.toString(),
+                Instant.now().toEpochMilli(),
+                like.getFilm().getId());
     }
 }
