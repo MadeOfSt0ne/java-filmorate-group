@@ -9,6 +9,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Value
 @Builder(toBuilder = true)
@@ -28,5 +29,8 @@ public class Film {
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate releaseDate;
 
-    @NonNull MpaRating mpa;
+    @NonNull
+    MpaRating mpa;
+
+    Set<Genre> genres;
 }

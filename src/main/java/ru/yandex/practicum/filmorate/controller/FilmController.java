@@ -48,9 +48,19 @@ public class FilmController {
         return validatedFilm;
     }
 
+    @DeleteMapping("{id}")
+    void delete(@PathVariable final Long id) {
+        filmService.removeFilm(id);
+    }
+
     @GetMapping("/popular")
     Collection<Film> getPopular(@RequestParam(required = false) final Integer count) {
         return filmService.getPopularFilms(count);
+    }
+
+    @GetMapping("/request?userId={userId}&friendId={friendId}")
+    Collection<Film> getCommonPopularFilms(@PathVariable final Long userId, @PathVariable final Long friendId) {
+        return filmService.getCommonPopular(userId, friendId);
     }
 
     @PutMapping("{id}/like/{userId}")
@@ -63,5 +73,10 @@ public class FilmController {
     void removeLike(@PathVariable final Long id, @PathVariable final Long userId) {
         log.info("USER ({}) DON'T LIKE FILM ({})", userId, id);
         filmService.removeLikeFromFilm(id, userId);
+    }
+
+    @GetMapping("/search?query={substring}&by={title}")
+    Collection<Film> searchFilmByTitle(@PathVariable final String substring, @PathVariable final String title) {
+        return filmService.searchFilmByTitle(substring, title);
     }
 }

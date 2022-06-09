@@ -5,15 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -136,5 +135,39 @@ class UserControllerTest {
         userController.addFriends(user5.getId(), user3.getId());
         userController.addFriends(user5.getId(), user4.getId());
         assertEquals(List.of(user3), userController.getCommonFriends(user4.getId(), user5.getId()));
+    }
+
+    @Test
+    void testGetEvents() {
+        Collection<Event> collections;
+        var user3 = userController.create(user1);
+        var user4 = userController.create(user2);
+        var user5 = userController.create(user2.toBuilder().email("test5@example.com").login("test5").build());
+
+        userController.addFriends(user3.getId(), user4.getId());
+        collections = userController.getEvents(user3.getId());
+
+        assertTrue(collections.isEmpty());
+
+        userController.addFriends(user4.getId(), user5.getId());
+        collections = userController.getEvents(user3.getId());
+        var events = collections.stream()
+                .map(this::createEvent)
+                .collect(Collectors.toList());
+
+        assertEquals(1, collections.size());
+        assertEquals(2, events.get(0).getEventId());
+        assertEquals("FRIEND", events.get(0).getEventType());
+        assertEquals("ADD", events.get(0).getOperation());
+    }
+
+    private Event createEvent(Event event) {
+        return Event.builder()
+                .eventId(event.getEventId())
+                .userId(event.getUserId())
+                .eventType(event.getEventType())
+                .operation(event.getOperation())
+                .timestamp(event.getTimestamp())
+                .entityId(event.getEntityId()).build();
     }
 }

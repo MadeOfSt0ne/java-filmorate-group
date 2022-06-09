@@ -69,6 +69,16 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
     }
 
     /**
+     * Реализация метода поиска фильма в inMemory не требуется, поэтому метод возвращает ошибку.
+     *
+     * @param str фрагмент названия
+     */
+    @Override
+    public Collection<Film> searchFilmByTitle(String str) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Возвращает список фильмов отсортированный по кол-ву лайков.
      *
      * @param limit максимальный раз списка фильмов
@@ -80,6 +90,29 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
                 new HashSet<>()).size());
 
         return films.values().stream().sorted(comparator.reversed()).limit(limit).collect(Collectors.toList());
+    }
+
+    /**
+     * Возвращает фильмы, которые лайкнул пользователь
+     *
+     * @param id id пользователя
+     */
+    @Override
+    public Collection<Film> getPopularFilmByUserId(Long id) {
+        HashMap<Long, Set<Long>> whoLikes = new HashMap<>(likes);
+        whoLikes.values().removeIf(userSet -> !userSet.contains(id));
+
+        return whoLikes.keySet().stream().map(films::get).collect(Collectors.toList());
+    }
+
+    /**
+     * Возвращает лайки всех пользователей сгруппированные по идентификатору пользователя. НЕ РЕАЛИЗОВАН.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public Map<Long, Set<Long>> getUsersLikesMap() {
+        throw new UnsupportedOperationException();
     }
 
     /**
