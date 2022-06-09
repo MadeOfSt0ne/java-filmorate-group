@@ -17,7 +17,7 @@ public interface RecommendationStorage {
     /**
      * Сохраняет рекомендацию в хранилище.
      *
-     * @param recommendation
+     * @param recommendation рекомендация
      */
     void save(Recommendation recommendation);
 }

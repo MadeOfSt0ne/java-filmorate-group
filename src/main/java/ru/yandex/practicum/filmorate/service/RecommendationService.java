@@ -39,6 +39,7 @@ public class RecommendationService {
         Map<Long, Set<Long>> usersLikes = likeStorage.getUsersLikesMap();
         Map<Long, Set<Long>> similarUsers = new HashMap<>();
 
+        // находим пользователей с макс. кол-вом общих лайков фильмам
         for (Map.Entry<Long, Set<Long>> i : usersLikes.entrySet()) {
             for (Map.Entry<Long, Set<Long>> j : usersLikes.entrySet()) {
                 if (Objects.equals(i.getKey(), j.getKey())) continue;
@@ -55,6 +56,7 @@ public class RecommendationService {
             }
         }
 
+        // собираем фильмы которые не лайк пользователь, но лайкали друзья
         Map<Long, Set<Long>> usersRecommendations = new HashMap<>();
         for (Map.Entry<Long, Set<Long>> i : similarUsers.entrySet()) {
             Set<Long> currentUserFilms = usersLikes.get(i.getKey());

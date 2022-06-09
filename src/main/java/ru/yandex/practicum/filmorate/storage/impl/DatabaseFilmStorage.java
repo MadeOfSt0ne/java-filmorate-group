@@ -88,10 +88,6 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
         jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
                 film.getMpa().getId(), film.getId());
 
-        /*
-         * TODO: ...
-         */
-
         final String deleteGenres = "DELETE FROM film_genres WHERE film_id = ?";
         jdbcTemplate.update(deleteGenres, film.getId());
 
@@ -167,9 +163,9 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
         final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();
 
         return jdbcTemplate.query(sql, (rs, numRow) -> {
-                    final Long filmId = rs.getLong("film_id");
-                    return mapRowToFilm(rs, filmsGenres.get(filmId));
-                });
+            final Long filmId = rs.getLong("film_id");
+            return mapRowToFilm(rs, filmsGenres.get(filmId));
+        });
     }
 
     /**
@@ -254,7 +250,8 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
                 .mpa(MpaRating.builder().id(rs.getInt("mpa_id")).title(rs.getString("title")).build())
                 .build();
     }
-    private void addEvent(Like like, EventType eventType, EventType eventOperation){
+
+    private void addEvent(Like like, EventType eventType, EventType eventOperation) {
         jdbcTemplate.update("INSERT INTO events (USER_ID, EVENT_TYPE, OPERATION, TIME_STAMP, ENTITY_ID) " +
                         "VALUES (?, ?, ?, ?, ?)",
                 like.getUser().getId(),

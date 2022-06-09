@@ -145,12 +145,12 @@ class UserControllerTest {
         var user5 = userController.create(user2.toBuilder().email("test5@example.com").login("test5").build());
 
         userController.addFriends(user3.getId(), user4.getId());
-        collections =  userController.getEvents(user3.getId());
+        collections = userController.getEvents(user3.getId());
 
         assertTrue(collections.isEmpty());
 
         userController.addFriends(user4.getId(), user5.getId());
-        collections =  userController.getEvents(user3.getId());
+        collections = userController.getEvents(user3.getId());
         var events = collections.stream()
                 .map(this::createEvent)
                 .collect(Collectors.toList());
@@ -161,7 +161,7 @@ class UserControllerTest {
         assertEquals("ADD", events.get(0).getOperation());
     }
 
-    private Event createEvent(Event event){
+    private Event createEvent(Event event) {
         return Event.builder()
                 .eventId(event.getEventId())
                 .userId(event.getUserId())
