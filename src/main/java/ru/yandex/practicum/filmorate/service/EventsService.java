@@ -12,6 +12,7 @@ import java.util.Collection;
 public class EventsService {
     private final EventsStorage eventsStorage;
     private final UserService userService;
+
     public Collection<Event> getEvents(Long id) {
         userService.getUser(id);
         return eventsStorage.getEvents(id);

@@ -16,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DatabaseEventsStorage implements EventsStorage {
     private final JdbcTemplate jdbcTemplate;
+
     @Override
     public Collection<Event> getEvents(Long id) {
         List<Event> list = new ArrayList<>();

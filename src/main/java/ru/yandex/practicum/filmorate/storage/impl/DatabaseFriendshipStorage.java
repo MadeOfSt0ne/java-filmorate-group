@@ -12,7 +12,7 @@ import java.time.Instant;
 import java.util.Collection;
 
 /**
- * Реализация интерфейса хранилища "дружбы", с хранением в реляционной базе данных.
+ * Реализация интерфейса хранилища "дружбы" с хранением в реляционной базе данных.
  */
 @Component
 @RequiredArgsConstructor
@@ -57,7 +57,8 @@ public class DatabaseFriendshipStorage implements FriendshipStorage {
         jdbcTemplate.update(sql, friendship.getUser().getId(), friendship.getFriend().getId());
         addEvent(friendship, EventType.FRIEND, EventType.REMOVE);
     }
-    private void addEvent(Friendship friendship, EventType eventType, EventType eventOperation){
+
+    private void addEvent(Friendship friendship, EventType eventType, EventType eventOperation) {
         jdbcTemplate.update("INSERT INTO events (USER_ID, EVENT_TYPE, OPERATION, TIME_STAMP, ENTITY_ID)" +
                         "VALUES (?, ?, ?, ?, ?)",
                 friendship.getUser().getId(),

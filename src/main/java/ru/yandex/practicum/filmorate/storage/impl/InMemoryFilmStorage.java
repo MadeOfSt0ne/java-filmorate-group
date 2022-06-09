@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage.impl;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
-import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
@@ -104,6 +103,16 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
         whoLikes.values().removeIf(userSet -> !userSet.contains(id));
 
         return whoLikes.keySet().stream().map(films::get).collect(Collectors.toList());
+    }
+
+    /**
+     * Возвращает лайки всех пользователей сгруппированные по идентификатору пользователя. НЕ РЕАЛИЗОВАН.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public Map<Long, Set<Long>> getUsersLikesMap() {
+        throw new UnsupportedOperationException();
     }
 
     /**

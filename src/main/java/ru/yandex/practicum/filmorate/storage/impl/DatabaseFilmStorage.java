@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
@@ -15,7 +14,7 @@ import java.time.Instant;
 import java.util.*;
 
 /**
- * Реализация интерфейса хранилища фильмов, с хранением в реляционной базе данных.
+ * Реализация интерфейса хранилища фильмов с хранением в реляционной базе данных.
  * Совмещена с реализацией интерфейса для хранения лайков и сортировки фильмов.
  */
 @Component
@@ -89,10 +88,6 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
         jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
                 film.getMpa().getId(), film.getId());
 
-        /*
-         * TODO: ...
-         */
-
         final String deleteGenres = "DELETE FROM film_genres WHERE film_id = ?";
         jdbcTemplate.update(deleteGenres, film.getId());
 
@@ -120,7 +115,7 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
      * Поиск фильма по фрагменту названия независимо от регистра.
      *
      * @param str фрагмент
-     * */
+     */
     @Override
     public Collection<Film> searchFilmByTitle(String str) {
         final String slqSearch = "SELECT * FROM films AS f LEFT OUTER JOIN " +
@@ -168,9 +163,32 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
         final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();
 
         return jdbcTemplate.query(sql, (rs, numRow) -> {
-                    final Long filmId = rs.getLong("film_id");
-                    return mapRowToFilm(rs, filmsGenres.get(filmId));
-                });
+            final Long filmId = rs.getLong("film_id");
+            return mapRowToFilm(rs, filmsGenres.get(filmId));
+        });
+    }
+
+    /**
+     * Возвращает лайки всех пользователей сгруппированные по идентификатору пользователя.
+     *
+     * @return таблица лайков
+     */
+    @Override
+    public Map<Long, Set<Long>> getUsersLikesMap() {
+        final String sql = "SELECT * FROM likes";
+
+        final Map<Long, Set<Long>> usersLikes = new HashMap<>();
+
+        jdbcTemplate.query(sql, (rs) -> {
+            final Long userId = rs.getLong("user_id");
+            final Long filmId = rs.getLong("film_id");
+            usersLikes.merge(userId, new HashSet<>(Set.of(filmId)), (oldVal, newVal) -> {
+                oldVal.add(filmId);
+                return oldVal;
+            });
+        });
+
+        return usersLikes;
     }
 
     /**
@@ -232,7 +250,8 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
                 .mpa(MpaRating.builder().id(rs.getInt("mpa_id")).title(rs.getString("title")).build())
                 .build();
     }
-    private void addEvent(Like like, EventType eventType, EventType eventOperation){
+
+    private void addEvent(Like like, EventType eventType, EventType eventOperation) {
         jdbcTemplate.update("INSERT INTO events (USER_ID, EVENT_TYPE, OPERATION, TIME_STAMP, ENTITY_ID) " +
                         "VALUES (?, ?, ?, ?, ?)",
                 like.getUser().getId(),

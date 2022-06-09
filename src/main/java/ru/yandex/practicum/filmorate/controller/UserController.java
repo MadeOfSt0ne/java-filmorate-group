@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.EventsService;
+import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.validator.UserValidator;
 
@@ -23,7 +25,10 @@ import java.util.Collection;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
+
     private final EventsService eventsService;
+
+    private final RecommendationService recommendationService;
 
     @GetMapping
     Collection<User> getAll() {
@@ -78,8 +83,13 @@ public class UserController {
         userService.deleteFriends(id, friendId);
     }
 
+    @GetMapping("{id}/recommendations")
+    Collection<Film> getRecommendations(@PathVariable final Long id) {
+        return recommendationService.getFilmRecommendationsByUserId(userService.getUser(id).getId());
+    }
+
     @GetMapping("/{id}/feed")
-    public Collection<Event> getEvents(@PathVariable("id") Long id){
+    public Collection<Event> getEvents(@PathVariable("id") Long id) {
         return eventsService.getEvents(id);
     }
 }
