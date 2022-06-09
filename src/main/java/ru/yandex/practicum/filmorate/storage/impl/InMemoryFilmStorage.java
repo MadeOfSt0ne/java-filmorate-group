@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.impl;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
@@ -90,6 +91,19 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
                 new HashSet<>()).size());
 
         return films.values().stream().sorted(comparator.reversed()).limit(limit).collect(Collectors.toList());
+    }
+
+    /**
+     * Возвращает фильмы, которые лайкнул пользователь
+     *
+     * @param id id пользователя
+     */
+    @Override
+    public Collection<Film> getPopularFilmByUserId(Long id) {
+        HashMap<Long, Set<Long>> whoLikes = new HashMap<>(likes);
+        whoLikes.values().removeIf(userSet -> !userSet.contains(id));
+
+        return whoLikes.keySet().stream().map(films::get).collect(Collectors.toList());
     }
 
     /**
