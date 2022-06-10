@@ -74,4 +74,11 @@ public class FilmController {
     Collection<Film> searchFilmByTitle(@PathVariable final String substring, @PathVariable final String title) {
         return filmService.searchFilmByTitle(substring, title);
     }
+
+    @GetMapping("/popular?limit={limit}&genre={genre}&year={year}")
+    Collection<Film> searchFilmByGenreAndYear(@RequestParam(defaultValue = "10") int limit,
+                                              @PathVariable("genre") String genre,
+                                              @PathVariable("year") int year) {
+        return filmService.searchFilmByGenreAndYear(limit, genre, year);
+    }
 }

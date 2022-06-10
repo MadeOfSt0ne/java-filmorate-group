@@ -122,21 +122,47 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
      * Поиск фильма по фрагменту названия независимо от регистра.
      *
      * @param str фрагмент
-     * */
+     */
     @Override
     public Collection<Film> searchFilmByTitle(String str) {
         final String slqSearch = "SELECT * FROM films AS f LEFT OUTER JOIN " +
                 "(SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
-                "AS l ON f.film_id = l.film_id LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
+                "AS l ON f.film_id = l.film_id " +
+                "LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
                 "WHERE f.name ILIKE CONCAT('%', ?, '%')" +
                 "ORDER BY l.likes_count DESC;";
 
-        final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();
-
         return jdbcTemplate.query(slqSearch, (rs, rowNum) -> {
             final Long filmId = rs.getLong("film_id");
-            return mapRowToFilm(rs, filmsGenres.get(filmId));
+            return mapRowToFilm(rs, getFilmGenresById(filmId));
         }, str);
+
+    }
+
+    /**
+     * Поиск фильма по жанру и году выпуска
+     *
+     * @param genre жанр
+     * @param year  год выпуска
+     * @param limit количество отображаемых фильмов
+     */
+    @Override
+    public Collection<Film> searchFilmByGenreAndYear(int limit, String genre, int year) {
+        final String slq = "SELECT * FROM films AS f " +
+                "LEFT OUTER JOIN (SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
+                "AS l ON f.film_id = l.film_id " +
+                "LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
+                "LEFT OUTER JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT OUTER JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "WHERE g.title ILIKE CONCAT('%', ?, '%') AND EXTRACT (YEAR FROM f.release_date) = ? " +
+                "ORDER BY l.likes_count DESC " +
+                "LIMIT ?;";
+
+        return jdbcTemplate.query(slq, (rs, rowNum) -> {
+            final Long filmId = rs.getLong("film_id");
+            return mapRowToFilm(rs, getFilmGenresById(filmId));
+        }, genre, year, limit);
+
     }
 
     /**
@@ -217,4 +243,5 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
                 .mpa(MpaRating.builder().id(rs.getInt("mpa_id")).title(rs.getString("title")).build())
                 .build();
     }
+
 }

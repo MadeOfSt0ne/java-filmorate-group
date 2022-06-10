@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -114,10 +115,29 @@ public class FilmService {
         return likeStorage.getPopularFilms(count != null ? count : 10);
     }
 
+    /**
+     * Поиск фильма по фрагменту названия независимо от регистра.
+     *
+     * @param substring фрагмент
+     * */
     public Collection<Film> searchFilmByTitle(final String substring, final String title) {
         if (substring == null || !title.equals("title")) {
             return null;
         }
         return filmStorage.searchFilmByTitle(substring);
+    }
+
+    /**
+     * Поиск фильма по жанру и году выпуска
+     *
+     * @param genre жанр
+     * @param year год выпуска
+     * @param limit количество отображаемых фильмов
+     */
+    public Collection<Film> searchFilmByGenreAndYear(int limit, String genre, int year) {
+        if (limit <= 0 || year < 1895 || genre == null) {
+            throw new ValidationException("Данные запроса не корректны.");
+        }
+        return filmStorage.searchFilmByGenreAndYear(limit, genre, year);
     }
 }

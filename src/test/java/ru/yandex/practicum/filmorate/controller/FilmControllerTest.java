@@ -8,16 +8,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.impl.DatabaseFilmStorage;
 
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -151,5 +150,14 @@ public class FilmControllerTest {
         final User user1 = userController.create(user);
         filmController.addLike(film2.getId(), user1.getId());
         assertEquals(List.of(film2), filmController.searchFilmByTitle("tERm", "title"));
+    }
+
+    @Test
+    void testSearchFilmByGenreAndYear() {
+        final Genre genre = Genre.builder(). id(1). title("Comedy").build();
+        final Film film1 = filmController.create(film.toBuilder().genres(Set.of(genre)).build());
+        final User user1 = userController.create(user);
+        filmController.addLike(film1.getId(), user1.getId());
+        assertEquals(List.of(film1), filmController.searchFilmByGenreAndYear(7,"comedy", 1970));
     }
 }

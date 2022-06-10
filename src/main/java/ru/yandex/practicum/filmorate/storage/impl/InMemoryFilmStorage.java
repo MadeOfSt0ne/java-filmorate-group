@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
@@ -75,6 +76,18 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
      */
     @Override
     public Collection<Film> searchFilmByTitle(String str) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Поиск фильма по жанру и году выпуска. Реализация не требуется, поэтому метод возвращает ошибку
+     *
+     * @param genre жанр
+     * @param year год выпуска
+     * @param limit количество отображаемых фильмов
+     */
+    @Override
+    public Collection<Film> searchFilmByGenreAndYear(int limit, String genre, int year) {
         throw new UnsupportedOperationException();
     }
 
