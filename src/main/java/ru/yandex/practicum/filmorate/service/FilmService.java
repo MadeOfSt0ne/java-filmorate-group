@@ -22,7 +22,8 @@ public class FilmService {
     private final LikeStorage likeStorage;
 
     @Autowired
-    FilmService(FilmStorage databaseFilmStorage, @Qualifier("databaseFilmStorage") LikeStorage databaseLikeStorage,
+    FilmService(FilmStorage databaseFilmStorage,
+                @Qualifier("databaseFilmStorage") LikeStorage databaseLikeStorage,
                 UserService userService) {
         this.filmStorage = databaseFilmStorage;
         this.userService = userService;
@@ -119,7 +120,7 @@ public class FilmService {
      * Поиск фильма по фрагменту названия независимо от регистра.
      *
      * @param substring фрагмент
-     * */
+     */
     public Collection<Film> searchFilmByTitle(final String substring, final String title) {
         if (substring == null || !title.equals("title")) {
             return null;
@@ -130,14 +131,14 @@ public class FilmService {
     /**
      * Поиск фильма по жанру и году выпуска
      *
-     * @param genre жанр
-     * @param year год выпуска
-     * @param limit количество отображаемых фильмов
+     * @param genreId id жанра
+     * @param year    год выпуска
+     * @param limit   количество отображаемых фильмов
      */
-    public Collection<Film> searchFilmByGenreAndYear(int limit, String genre, int year) {
-        if (limit <= 0 || year < 1895 || genre == null) {
+    public Collection<Film> searchFilmByGenreAndYear(int limit, int genreId, int year) {
+        if (limit <= 0 || year < 1895) {
             throw new ValidationException("Данные запроса не корректны.");
         }
-        return filmStorage.searchFilmByGenreAndYear(limit, genre, year);
+        return filmStorage.searchFilmByGenreAndYear(limit, genreId, year);
     }
 }

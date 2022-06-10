@@ -54,7 +54,10 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    Collection<Film> getPopular(@RequestParam(required = false) final Integer count) {
+    Collection<Film> getPopular(@RequestParam(defaultValue = "10") final Integer count,
+                                @RequestParam(required = false) Integer genreId,
+                                @RequestParam(required = false) Integer year) {
+        if (genreId != null && year != null) return filmService.searchFilmByGenreAndYear(count, genreId, year);
         return filmService.getPopularFilms(count);
     }
 
@@ -70,15 +73,8 @@ public class FilmController {
         filmService.removeLikeFromFilm(id, userId);
     }
 
-    @GetMapping("/search?query={substring}&by={title}")
-    Collection<Film> searchFilmByTitle(@PathVariable final String substring, @PathVariable final String title) {
+    @GetMapping("/search")
+    Collection<Film> searchFilmByTitle(@RequestParam final String substring, @RequestParam final String title) {
         return filmService.searchFilmByTitle(substring, title);
-    }
-
-    @GetMapping("/popular?limit={limit}&genre={genre}&year={year}")
-    Collection<Film> searchFilmByGenreAndYear(@RequestParam(defaultValue = "10") int limit,
-                                              @PathVariable("genre") String genre,
-                                              @PathVariable("year") int year) {
-        return filmService.searchFilmByGenreAndYear(limit, genre, year);
     }
 }

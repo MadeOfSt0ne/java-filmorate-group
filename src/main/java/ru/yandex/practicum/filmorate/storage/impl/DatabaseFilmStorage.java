@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
@@ -142,26 +141,26 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     /**
      * Поиск фильма по жанру и году выпуска
      *
-     * @param genre жанр
-     * @param year  год выпуска
-     * @param limit количество отображаемых фильмов
+     * @param genreId id жанра
+     * @param year    год выпуска
+     * @param limit   количество отображаемых фильмов
      */
     @Override
-    public Collection<Film> searchFilmByGenreAndYear(int limit, String genre, int year) {
+    public Collection<Film> searchFilmByGenreAndYear(int limit, int genreId, int year) {
         final String slq = "SELECT * FROM films AS f " +
                 "LEFT OUTER JOIN (SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
                 "AS l ON f.film_id = l.film_id " +
                 "LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
                 "LEFT OUTER JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "LEFT OUTER JOIN genres AS g ON fg.genre_id = g.genre_id " +
-                "WHERE g.title ILIKE CONCAT('%', ?, '%') AND EXTRACT (YEAR FROM f.release_date) = ? " +
+                "WHERE g.genre_id = ? AND EXTRACT (YEAR FROM f.release_date) = ? " +
                 "ORDER BY l.likes_count DESC " +
                 "LIMIT ?;";
 
         return jdbcTemplate.query(slq, (rs, rowNum) -> {
             final Long filmId = rs.getLong("film_id");
             return mapRowToFilm(rs, getFilmGenresById(filmId));
-        }, genre, year, limit);
+        }, genreId, year, limit);
 
     }
 
@@ -243,5 +242,4 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
                 .mpa(MpaRating.builder().id(rs.getInt("mpa_id")).title(rs.getString("title")).build())
                 .build();
     }
-
 }

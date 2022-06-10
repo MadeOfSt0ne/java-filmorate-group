@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
 
@@ -55,9 +54,9 @@ public interface FilmStorage {
     /**
      * Поиск фильма по жанру и году выпуска
      *
-     * @param genre жанр
-     * @param year год выпуска
-     * @param limit количество отображаемых фильмов
+     * @param genreId id жанра
+     * @param year    год выпуска
+     * @param limit   количество отображаемых фильмов
      */
-    Collection<Film> searchFilmByGenreAndYear(int limit, String genre, int year);
+    Collection<Film> searchFilmByGenreAndYear(int limit, int genreId, int year);
 }
