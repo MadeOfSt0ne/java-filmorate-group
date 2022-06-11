@@ -136,7 +136,7 @@ public class FilmService {
      * @param limit   количество отображаемых фильмов
      */
     public Collection<Film> searchFilmByGenreAndYear(int limit, int genreId, int year) {
-        if (limit <= 0 || year < 1895) {
+        if (limit <= 0 || year < 1895 || genreId <=0) {
             throw new ValidationException("Данные запроса не корректны.");
         }
         return filmStorage.searchFilmByGenreAndYear(limit, genreId, year);
