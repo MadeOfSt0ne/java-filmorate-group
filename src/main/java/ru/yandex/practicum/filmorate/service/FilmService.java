@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -9,8 +10,7 @@ import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
-import java.util.Collection;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Класс-сервис для управления фильмами.
@@ -21,13 +21,17 @@ public class FilmService {
     private final UserService userService;
     private final LikeStorage likeStorage;
 
+    private final ApplicationEventPublisher publisher;
+
     @Autowired
     FilmService(FilmStorage databaseFilmStorage,
                 @Qualifier("databaseFilmStorage") LikeStorage databaseLikeStorage,
-                UserService userService) {
+                UserService userService,
+                ApplicationEventPublisher publisher) {
         this.filmStorage = databaseFilmStorage;
         this.userService = userService;
         this.likeStorage = databaseLikeStorage;
+        this.publisher = publisher;
     }
 
     /**
@@ -140,5 +144,19 @@ public class FilmService {
             throw new ValidationException("Данные запроса не корректны.");
         }
         return filmStorage.searchFilmByGenreAndYear(limit, genreId, year);
+    }
+
+    public Collection<Film> getCommonPopular(final Long userId, final Long friendId) {
+        if (userService.getUser(userId) == null || userService.getUser(friendId) == null) {
+            throw new NoSuchElementException();
+        }
+        if (userService.getUserFriends(userId).contains(userService.getUser(friendId)) ||
+                userService.getUserFriends(friendId).contains(userService.getUser(userId))) {
+
+            Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
+            intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
+            return intersection;
+        } else
+            return new ArrayList<>();
     }
 }
