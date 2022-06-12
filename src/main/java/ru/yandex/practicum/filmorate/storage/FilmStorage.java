@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.springframework.data.relational.core.sql.In;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.OptionalInt;
 
 /**
  * Интерфейс для хранилища фильмов.
@@ -58,5 +60,5 @@ public interface FilmStorage {
      * @param year    год выпуска
      * @param limit   количество отображаемых фильмов
      */
-    Collection<Film> searchFilmByGenreAndYear(int limit, int genreId, int year);
+    Collection<Film> searchFilmByGenreAndYear(Integer limit, Integer genreId, Integer year);
 }

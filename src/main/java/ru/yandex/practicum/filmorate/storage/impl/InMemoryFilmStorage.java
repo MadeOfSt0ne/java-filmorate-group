@@ -86,7 +86,7 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
      * @param limit   количество отображаемых фильмов
      */
     @Override
-    public Collection<Film> searchFilmByGenreAndYear(int limit, int genreId, int year) {
+    public Collection<Film> searchFilmByGenreAndYear(Integer limit, Integer genreId, Integer year) {
         throw new UnsupportedOperationException();
     }
 

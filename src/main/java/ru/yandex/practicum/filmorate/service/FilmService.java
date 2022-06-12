@@ -155,11 +155,16 @@ public class FilmService {
      * @param year    год выпуска
      * @param limit   количество отображаемых фильмов
      */
-    public Collection<Film> searchFilmByGenreAndYear(int limit, int genreId, int year) {
-        if (limit <= 0 || year < 1895 || genreId <=0) {
-            throw new ValidationException("Данные запроса не корректны.");
+    public Collection<Film> searchFilmByGenreAndYear(Integer limit, Integer genreId, Integer year) {
+        if (genreId != null && year != null) {
+            return filmStorage.searchFilmByGenreAndYear(limit, genreId, year);
         }
-        return filmStorage.searchFilmByGenreAndYear(limit, genreId, year);
+        if (genreId != null) {
+            return filmStorage.searchFilmByGenreAndYear(limit, genreId, 5);
+        }
+        if (year != null) {
+            return filmStorage.searchFilmByGenreAndYear(limit, 555, year);
+        }
+        return likeStorage.getPopularFilms(limit != null ? limit : 10);
     }
-
 }
