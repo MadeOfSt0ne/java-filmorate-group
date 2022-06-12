@@ -4,19 +4,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Like;
-import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.*;
 
 /**
- * Реализация интерфейса хранилища фильмов, с хранением в реляционной базе данных.
+ * Реализация интерфейса хранилища фильмов с хранением в реляционной базе данных.
  * Совмещена с реализацией интерфейса для хранения лайков и сортировки фильмов.
  */
 @Component
@@ -106,10 +104,6 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
         jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
                 film.getMpa().getId(), film.getId());
 
-        /*
-         * TODO: ...
-         */
-
         final String deleteGenres = "DELETE FROM film_genres WHERE film_id = ?";
         jdbcTemplate.update(deleteGenres, film.getId());
 
@@ -186,6 +180,46 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
         }, limit);
     }
 
+    @Override
+    public Collection<Film> getPopularFilmByUserId(Long id) {
+        final String sql = "SELECT * FROM films " +
+                "LEFT JOIN mpa ON films.mpa_id = mpa.mpa_id " +
+                "LEFT JOIN (SELECT film_id, user_id, COUNT(*) likes_count FROM likes GROUP BY user_id, film_id)" +
+                " l ON films.film_id = l.film_id " +
+                "WHERE l.user_id = ? " +
+                "ORDER BY l.likes_count DESC;";
+
+        final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();
+
+        return jdbcTemplate.query(sql, (rs, numRow) -> {
+            final Long filmId = rs.getLong("film_id");
+            return mapRowToFilm(rs, filmsGenres.get(filmId));
+        }, id);
+    }
+
+    /**
+     * Возвращает лайки всех пользователей сгруппированные по идентификатору пользователя.
+     *
+     * @return таблица лайков
+     */
+    @Override
+    public Map<Long, Set<Long>> getUsersLikesMap() {
+        final String sql = "SELECT * FROM likes";
+
+        final Map<Long, Set<Long>> usersLikes = new HashMap<>();
+
+        jdbcTemplate.query(sql, (rs) -> {
+            final Long userId = rs.getLong("user_id");
+            final Long filmId = rs.getLong("film_id");
+            usersLikes.merge(userId, new HashSet<>(Set.of(filmId)), (oldVal, newVal) -> {
+                oldVal.add(filmId);
+                return oldVal;
+            });
+        });
+
+        return usersLikes;
+    }
+
     /**
      * Добавляет лайк в хранилище.
      *
@@ -196,6 +230,7 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     public void save(Like like) {
         final String sql = "INSERT INTO likes (user_id, film_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, like.getUser().getId(), like.getFilm().getId());
+        addEvent(like, EventType.LIKE, EventType.ADD);
     }
 
     /**
@@ -208,6 +243,7 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     public void delete(Like like) {
         final String sql = "DELETE FROM likes WHERE user_id = ? AND film_id = ?";
         jdbcTemplate.update(sql, like.getUser().getId(), like.getFilm().getId());
+        addEvent(like, EventType.LIKE, EventType.REMOVE);
     }
 
     private Map<Long, Set<Genre>> getAllFilmsGenres() {
@@ -242,5 +278,15 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
                 .genres(genres != null && genres.isEmpty() ? null : genres)
                 .mpa(MpaRating.builder().id(rs.getInt("mpa_id")).title(rs.getString("title")).build())
                 .build();
+    }
+
+    private void addEvent(Like like, EventType eventType, EventType eventOperation) {
+        jdbcTemplate.update("INSERT INTO events (USER_ID, EVENT_TYPE, OPERATION, TIME_STAMP, ENTITY_ID) " +
+                        "VALUES (?, ?, ?, ?, ?)",
+                like.getUser().getId(),
+                eventType.toString(),
+                eventOperation.toString(),
+                Instant.now().toEpochMilli(),
+                like.getFilm().getId());
     }
 }

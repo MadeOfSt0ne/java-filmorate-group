@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.events.FilmLikeAddedEvent;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
@@ -27,7 +28,8 @@ public class FilmService {
     FilmService(FilmStorage databaseFilmStorage,
                 @Qualifier("databaseFilmStorage") LikeStorage databaseLikeStorage,
                 UserService userService,
-                ApplicationEventPublisher publisher) {
+                ApplicationEventPublisher publisher
+    ) {
         this.filmStorage = databaseFilmStorage;
         this.userService = userService;
         this.likeStorage = databaseLikeStorage;
@@ -96,6 +98,7 @@ public class FilmService {
      */
     public void addLikeToFilm(final Long id, final Long userId) {
         likeStorage.save(Like.builder().film(getFilm(id)).user(userService.getUser(userId)).build());
+        publisher.publishEvent(new FilmLikeAddedEvent(this));
     }
 
     /**
@@ -132,6 +135,20 @@ public class FilmService {
         return filmStorage.searchFilmByTitle(substring);
     }
 
+    public Collection<Film> getCommonPopular(final Long userId, final Long friendId) {
+        if (userService.getUser(userId) == null || userService.getUser(friendId) == null) {
+            throw new NoSuchElementException();
+        }
+        if (userService.getUserFriends(userId).contains(userService.getUser(friendId)) ||
+                userService.getUserFriends(friendId).contains(userService.getUser(userId))) {
+
+            Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
+            intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
+            return intersection;
+        } else
+            return new ArrayList<>();
+    }
+
     /**
      * Поиск фильма по жанру и году выпуска
      *
@@ -146,17 +163,4 @@ public class FilmService {
         return filmStorage.searchFilmByGenreAndYear(limit, genreId, year);
     }
 
-    public Collection<Film> getCommonPopular(final Long userId, final Long friendId) {
-        if (userService.getUser(userId) == null || userService.getUser(friendId) == null) {
-            throw new NoSuchElementException();
-        }
-        if (userService.getUserFriends(userId).contains(userService.getUser(friendId)) ||
-                userService.getUserFriends(friendId).contains(userService.getUser(userId))) {
-
-            Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
-            intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
-            return intersection;
-        } else
-            return new ArrayList<>();
-    }
 }

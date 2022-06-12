@@ -11,17 +11,31 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Реализация интерфейса хранилища рейтингов MPA с хранением в реляционной базе данных.
+ */
 @Component
 @RequiredArgsConstructor
 public class DatabaseMpaStorage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * Получает все рейтинги из хранилища.
+     *
+     * @return коллекция рейтингов
+     */
     @Override
     public Collection<MpaRating> getAll() {
         final String sql = "SELECT * FROM mpa";
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToMpa(rs));
     }
 
+    /**
+     * Получает объект MPA рейтинг по идентификатору.
+     *
+     * @param id уникальный идентификатор рейтинга
+     * @return объект рейтинг
+     */
     @Override
     public MpaRating get(int id) {
         final String sql = "SELECT * FROM mpa WHERE mpa_id = ?";
