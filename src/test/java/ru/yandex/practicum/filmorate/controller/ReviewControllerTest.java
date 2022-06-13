@@ -1,7 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,8 +11,6 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
-import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.time.LocalDate;
 
@@ -51,10 +47,41 @@ class ReviewControllerTest {
     }
 
     @Test
-    void createCorrectReview() {
+    void testCreateCorrectReview() {
         filmController.create(film);
         userController.create(user);
         Review review1 = reviewController.create(review);
         assertEquals(review1, reviewController.get(review1.getReviewId()));
     }
+
+    @Test
+    void testAddLikeToReview() {
+        Film film1 = filmController.create(film);
+        User user1 = userController.create(user);
+        Review review1 = reviewController.create(review);
+        reviewController.addLike(review1.getReviewId(), user1.getId());
+        assertEquals(review1, reviewController.getAllByFilm(1L, 10).stream().findFirst().orElse(null));
+    }
+
+    @Test
+    void testRemoveLikeToReview() {
+        Film film1 = filmController.create(film);
+        User user1 = userController.create(user);
+        Review review1 = reviewController.create(review);
+        reviewController.addLike(review1.getReviewId(), user1.getId());
+        reviewController.removeLike(review1.getReviewId(), user1.getId());
+        assertEquals(review1, reviewController.getAllByFilm(1L, 10).stream().findFirst().orElse(null));
+    }
+
+    @Test
+    void testGetPopularReview() {
+        Film film1 = filmController.create(film);
+        User user1 = userController.create(user);
+        Review review1 = reviewController.create(review);
+        Review review2 = reviewController.create(review);
+        reviewController.addLike(review1.getReviewId(), user1.getId());
+        reviewController.addDisLike(review2.getReviewId(), user1.getId());
+        assertEquals(review1, reviewController.getAllByFilm(1L, 1).stream().findFirst().orElse(null));
+    }
+
 }

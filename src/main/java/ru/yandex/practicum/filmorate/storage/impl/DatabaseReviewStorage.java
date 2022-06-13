@@ -7,7 +7,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.LikeReview;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.sql.PreparedStatement;
@@ -17,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Component
-public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
+public class DatabaseReviewStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -91,9 +90,9 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
                 "AS t2 ON(t1.review_id=t2.review_id) " +
                 "WHERE t1.review_id=?;";
         List<LikeReview> list = jdbcTemplate.query(query, this::mapRowToLikeReview, reviewId);
-        if(list.size()>0){
+        if (list.size() > 0) {
             return list.get(0);
-        }else{
+        } else {
 
             return LikeReview.builder().reviewId(reviewId).useful(0).build();
         }
