@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.validator.FilmValidator;
 
 import javax.validation.Valid;
 import java.util.Collection;
-import java.util.OptionalInt;
 
 /**
  * REST-контроллер для фильмов.
@@ -58,7 +57,6 @@ public class FilmController {
     Collection<Film> getPopular(@RequestParam(value = "count", defaultValue = "10") final Integer count,
                                 @RequestParam(value = "genreId", required = false) Integer genreId,
                                 @RequestParam(value = "year", required = false) Integer year) {
-        //if (genreId == null && year == null) return filmService.getPopularFilms(count);
         return filmService.searchFilmByGenreAndYear(count, genreId, year);
     }
 

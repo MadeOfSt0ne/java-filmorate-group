@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.events.FilmLikeAddedEvent;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -111,18 +110,7 @@ public class FilmService {
         likeStorage.delete(Like.builder().film(getFilm(id)).user(userService.getUser(userId)).build());
     }
 
-    /**
-     * Получает список самых популярных (залайканных) фильмов.
-     *
-     * @param count кол-во фильмов
-     * @return коллекция из фильмов
-     * @throws NoSuchElementException - если фильма не существует.
-     */
-    public Collection<Film> getPopularFilms(final Integer count) {
-        return likeStorage.getPopularFilms(count != null ? count : 10);
-    }
-
-    /**
+     /**
      * Поиск фильма по фрагменту названия независимо от регистра.
      *
      * @param substring фрагмент
@@ -156,15 +144,9 @@ public class FilmService {
      * @param limit   количество отображаемых фильмов
      */
     public Collection<Film> searchFilmByGenreAndYear(Integer limit, Integer genreId, Integer year) {
-        if (genreId != null && year != null) {
-            return filmStorage.searchFilmByGenreAndYear(limit, genreId, year);
+        if (genreId == null && year == null) {
+            return likeStorage.getPopularFilms(limit != null ? limit : 10);
         }
-        if (genreId != null) {
-            return filmStorage.searchFilmByGenreAndYear(limit, genreId, 5);
-        }
-        if (year != null) {
-            return filmStorage.searchFilmByGenreAndYear(limit, 555, year);
-        }
-        return likeStorage.getPopularFilms(limit != null ? limit : 10);
+        return filmStorage.searchFilmByGenreAndYear(limit, genreId, year);
     }
 }

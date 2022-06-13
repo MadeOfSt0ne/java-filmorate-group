@@ -168,19 +168,19 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
      */
     @Override
     public Collection<Film> searchFilmByGenreAndYear(Integer limit, Integer genreId, Integer year) {
-        if (year != 5 && genreId != 555) {
+        if (year != null && genreId != null) {
             return jdbcTemplate.query(SQL_SEARCH_GENRE_YEAR, (rs, rowNum) -> {
                 final Long filmId = rs.getLong("film_id");
                 return mapRowToFilm(rs, getFilmGenresById(filmId));
             }, genreId, year, limit);
         }
-        if (year == 5 && genreId != 555) {
+        if (year == null && genreId != null) {
             return jdbcTemplate.query(SQL_SEARCH_GENRE, (rs, rowNum) -> {
                 final Long filmId = rs.getLong("film_id");
                 return mapRowToFilm(rs, getFilmGenresById(filmId));
             }, genreId, limit);
         }
-        if (year != 5) {
+        if (year != null) {
             return jdbcTemplate.query(SQL_SEARCH_YEAR, (rs, rowNum) -> {
                 final Long filmId = rs.getLong("film_id");
                 return mapRowToFilm(rs, getFilmGenresById(filmId));
