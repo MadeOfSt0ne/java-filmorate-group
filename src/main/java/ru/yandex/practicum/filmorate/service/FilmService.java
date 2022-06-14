@@ -133,6 +133,7 @@ public class FilmService {
         if (userService.getUser(userId) == null || userService.getUser(friendId) == null) {
             throw new NoSuchElementException();
         }
+
             Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
             intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
             return intersection;
