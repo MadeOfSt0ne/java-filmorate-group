@@ -81,29 +81,21 @@ public class DatabaseReviewStorage implements ReviewStorage {
 
     @Override
     public LikeReview getCountLike(Long reviewId) {
-        String positive = "SELECT review_id, COUNT(review_id) as useful  FROM review_like WHERE is_useful=TRUE AND review_id=? GROUP BY review_id ";
-        LikeReview pos = getLikeReviewCount(reviewId, positive);
-        String negative = "SELECT review_id, COUNT(review_id) as useful  FROM review_like WHERE is_useful=FALSE AND review_id=? GROUP BY review_id";
-        LikeReview neg = getLikeReviewCount(reviewId, negative);
-        LikeReview result = LikeReview.builder().reviewId(reviewId).useful(pos.getUseful() - neg.getUseful()).build();
-        return result;
-    }
-
-    private LikeReview getLikeReviewCount(Long reviewId, String positive) {
-        List<LikeReview> list = jdbcTemplate.query(positive, this::mapRowToLikeReview, reviewId);
-        LikeReview pos;
+        final String sql = "SELECT REVIEW_ID, SUM(CASE WHEN IS_USEFUL=TRUE THEN 1 ELSE 0 END) POSITIVE,"
+                + " SUM(CASE WHEN IS_USEFUL=FALSE THEN 1 ELSE 0 END) NEGATIVE"
+                + " FROM REVIEW_LIKE WHERE REVIEW_ID = ? GROUP BY REVIEW_ID";
+        List<LikeReview> list = jdbcTemplate.query(sql, this::mapRowToLikeReview, reviewId);
         if (list.size() > 0) {
-            pos = list.get(0);
+            return list.get(0);
         } else {
-            pos = LikeReview.builder().reviewId(reviewId).useful(0).build();
+            return LikeReview.builder().reviewId(reviewId).useful(0).build();
         }
-        return pos;
     }
 
     private LikeReview mapRowToLikeReview(ResultSet resultSet, int rowNum) throws SQLException {
         return LikeReview.builder()
                 .reviewId(resultSet.getLong("review_id"))
-                .useful(resultSet.getInt("useful"))
+                .useful(resultSet.getInt("positive") - resultSet.getInt("negative"))
                 .build();
     }
 
