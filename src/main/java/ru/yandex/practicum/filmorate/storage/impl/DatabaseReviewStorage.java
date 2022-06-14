@@ -5,8 +5,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
+import ru.yandex.practicum.filmorate.model.LikeReview;
+import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.sql.PreparedStatement;
@@ -17,9 +17,9 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
+public class DatabaseReviewStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final DatabaseEventsStorage databaseEventsStorage;
+
 
     @Override
     public Review add(Review review) {
@@ -34,7 +34,6 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
             return stmt;
         }, keyHolder);
         review.setReviewId(keyHolder.getKey().longValue());
-        databaseEventsStorage.add(review, EventType.REVIEW, EventOperations.ADD);
         return review;
     }
 
@@ -53,7 +52,6 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
                 review.getUserId(),
                 review.getFilmId(),
                 review.getReviewId());
-        databaseEventsStorage.add(review, EventType.REVIEW, EventOperations.UPDATE);
     }
 
     @Override
@@ -71,7 +69,7 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
     @Override
     public void saveLike(LikeReview likeReview) {
         String query = "INSERT INTO review_like (user_id, review_id, is_useful) VALUES (?, ?, ?)";
-        jdbcTemplate.update(query, likeReview.getUserId(), likeReview.getReviewId(), likeReview.isUseful());
+        jdbcTemplate.update(query, likeReview.getUserId(), likeReview.getReviewId(), likeReview.isUsefulness());
     }
 
     @Override
@@ -83,12 +81,10 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
 
     @Override
     public LikeReview getCountLike(Long reviewId) {
-        String query = "SELECT t1.review_id, (t1.count-t2.count) AS useful " +
-                "FROM (SELECT COUNT(review_id) as count, review_id FROM review_like WHERE is_useful=TRUE GROUP BY review_id) " +
-                "AS t1  LEFT JOIN(SELECT COUNT(review_id) as count, review_id FROM review_like WHERE is_useful=FALSE GROUP BY review_id) " +
-                "AS t2 ON(t1.review_id=t2.review_id) " +
-                "WHERE t1.review_id=?;";
-        List<LikeReview> list = jdbcTemplate.query(query, this::mapRowToLikeReview, reviewId);
+        final String sql = "SELECT REVIEW_ID, SUM(CASE WHEN IS_USEFUL=TRUE THEN 1 ELSE 0 END) POSITIVE,"
+                + " SUM(CASE WHEN IS_USEFUL=FALSE THEN 1 ELSE 0 END) NEGATIVE"
+                + " FROM REVIEW_LIKE WHERE REVIEW_ID = ? GROUP BY REVIEW_ID";
+        List<LikeReview> list = jdbcTemplate.query(sql, this::mapRowToLikeReview, reviewId);
         if (list.size() > 0) {
             return list.get(0);
         } else {
@@ -99,7 +95,7 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
     private LikeReview mapRowToLikeReview(ResultSet resultSet, int rowNum) throws SQLException {
         return LikeReview.builder()
                 .reviewId(resultSet.getLong("review_id"))
-                .useful(resultSet.getInt("useful"))
+                .useful(resultSet.getInt("positive") - resultSet.getInt("negative"))
                 .build();
     }
 

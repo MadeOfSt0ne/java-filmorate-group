@@ -10,6 +10,9 @@ import ru.yandex.practicum.filmorate.service.ReviewService;
 import javax.validation.Valid;
 import java.util.List;
 
+/**
+ * REST-контроллер для отзывов к фильмам.
+ */
 @Slf4j
 @RestController
 @Validated
@@ -40,11 +43,16 @@ public class ReviewController {
         log.info("GET BY ID {}", id);
         return reviewService.findReviewById(id);
     }
+    @DeleteMapping("{id}")
+    void delete(@PathVariable Long id) {
+        log.info("DELETE BY ID {}", id);
+        reviewService.deleteReview(id);
+    }
 
     @GetMapping
-    List<Review> getAllByFilm(@RequestParam Long filmId) {
-        log.info("GET ALL BY FILM ID {}", filmId);
-        return reviewService.getReviewsByFilmId(filmId);
+    List<Review> getAllByFilm(@RequestParam Long filmId, @RequestParam(defaultValue = "10", required = false) Integer count) {
+        log.info("GET ALL BY FILM ID {} COUNT {}", filmId, count);
+        return reviewService.getReviewsByFilmId(filmId, count);
     }
 
     @PutMapping("{id}/like/{userId}")

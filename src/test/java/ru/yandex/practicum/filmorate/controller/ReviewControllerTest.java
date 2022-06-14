@@ -48,10 +48,43 @@ class ReviewControllerTest {
     }
 
     @Test
-    void createCorrectReview() {
-        filmController.create(film);
-        userController.create(user);
-        Review review1 = reviewController.create(review);
+    void testCreateCorrectReview() {
+        Film film1 = filmController.create(film);
+        User user1 = userController.create(user);
+        Review review1 = reviewController.create(Review.builder().filmId(film1.getId()).userId(user1.getId()).isPositive(true).content("wwwwww").build());
         assertEquals(review1, reviewController.get(review1.getReviewId()));
     }
+
+    @Test
+    void testAddLikeToReview() {
+        Film film1 = filmController.create(film);
+        User user1 = userController.create(user);
+        Review review1 = reviewController.create(Review.builder().filmId(film1.getId()).userId(user1.getId()).isPositive(true).content("wwwwww").build());
+        reviewController.addLike(review1.getReviewId(), user1.getId());
+        review1 = reviewController.get(1L);
+        assertEquals(review1, reviewController.getAllByFilm(film1.getId(), 10).stream().findFirst().orElse(null));
+    }
+
+    @Test
+    void testRemoveLikeToReview() {
+        Film film1 = filmController.create(film);
+        User user1 = userController.create(user);
+        Review review1 = reviewController.create(Review.builder().filmId(film1.getId()).userId(user1.getId()).isPositive(true).content("wwwwww").build());
+        reviewController.addLike(review1.getReviewId(), user1.getId());
+        reviewController.removeLike(review1.getReviewId(), user1.getId());
+        assertEquals(review1, reviewController.getAllByFilm(film1.getId(), 10).stream().findFirst().orElse(null));
+    }
+
+    @Test
+    void testGetPopularReview() {
+        Film film1 = filmController.create(film);
+        User user1 = userController.create(user);
+        Review review1 = reviewController.create(Review.builder().filmId(film1.getId()).userId(user1.getId()).isPositive(true).content("wwwwww").build());
+        Review review2 = reviewController.create(Review.builder().filmId(film1.getId()).userId(user1.getId()).isPositive(false).content("222").build());
+        reviewController.addLike(review1.getReviewId(), user1.getId());
+        reviewController.addDisLike(review2.getReviewId(), user1.getId());
+        review1 = reviewController.get(1L);
+        assertEquals(review1, reviewController.getAllByFilm(film1.getId(), 1).stream().findFirst().orElse(null));
+    }
+
 }
