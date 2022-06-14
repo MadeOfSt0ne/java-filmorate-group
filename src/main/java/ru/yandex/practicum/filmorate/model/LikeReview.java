@@ -1,13 +1,13 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@Data
 @Builder
 public class LikeReview {
     Long userId;
     Long reviewId;
-    boolean isUseful;
+    boolean isUsefulness;
     int useful;
 }

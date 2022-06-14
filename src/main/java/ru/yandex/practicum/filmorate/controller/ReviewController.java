@@ -43,6 +43,11 @@ public class ReviewController {
         log.info("GET BY ID {}", id);
         return reviewService.findReviewById(id);
     }
+    @DeleteMapping("{id}")
+    void delete(@PathVariable Long id) {
+        log.info("DELETE BY ID {}", id);
+        reviewService.deleteReview(id);
+    }
 
     @GetMapping
     List<Review> getAllByFilm(@RequestParam Long filmId, @RequestParam(defaultValue = "10", required = false) Integer count) {

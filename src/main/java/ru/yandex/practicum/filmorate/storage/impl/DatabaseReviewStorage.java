@@ -72,7 +72,7 @@ public class DatabaseReviewStorage implements ReviewStorage {
     @Override
     public void saveLike(LikeReview likeReview) {
         String query = "INSERT INTO review_like (user_id, review_id, is_useful) VALUES (?, ?, ?)";
-        jdbcTemplate.update(query, likeReview.getUserId(), likeReview.getReviewId(), likeReview.isUseful());
+        jdbcTemplate.update(query, likeReview.getUserId(), likeReview.getReviewId(), likeReview.isUsefulness());
     }
 
     @Override
@@ -84,18 +84,27 @@ public class DatabaseReviewStorage implements ReviewStorage {
 
     @Override
     public LikeReview getCountLike(Long reviewId) {
-        String query = "SELECT t1.review_id, (t1.count-t2.count) AS useful " +
-                "FROM (SELECT COUNT(review_id) as count, review_id FROM review_like WHERE is_useful=TRUE GROUP BY review_id) " +
-                "AS t1  LEFT JOIN(SELECT COUNT(review_id) as count, review_id FROM review_like WHERE is_useful=FALSE GROUP BY review_id) " +
-                "AS t2 ON(t1.review_id=t2.review_id) " +
-                "WHERE t1.review_id=?;";
-        List<LikeReview> list = jdbcTemplate.query(query, this::mapRowToLikeReview, reviewId);
-        if (list.size() > 0) {
-            return list.get(0);
-        } else {
 
-            return LikeReview.builder().reviewId(reviewId).useful(0).build();
+        String positive="SELECT review_id, COUNT(review_id) as useful  FROM review_like WHERE is_useful=TRUE AND review_id=? GROUP BY review_id ";
+
+        LikeReview pos = getLikeReviewCount(reviewId, positive);
+
+        String negative="SELECT review_id, COUNT(review_id) as useful  FROM review_like WHERE is_useful=FALSE AND review_id=? GROUP BY review_id";
+
+        LikeReview neg = getLikeReviewCount(reviewId, negative);
+        LikeReview result= LikeReview.builder().reviewId(reviewId).useful(pos.getUseful()-neg.getUseful()).build();
+        return result;
+    }
+
+    private LikeReview getLikeReviewCount(Long reviewId, String positive) {
+        List<LikeReview> list = jdbcTemplate.query(positive, this::mapRowToLikeReview, reviewId);
+        LikeReview pos;
+        if (list.size() > 0) {
+            pos= list.get(0);
+        } else {
+            pos= LikeReview.builder().reviewId(reviewId).useful(0).build();
         }
+        return pos;
     }
 
     private LikeReview mapRowToLikeReview(ResultSet resultSet, int rowNum) throws SQLException {

@@ -78,9 +78,11 @@ class ReviewControllerTest {
         Film film1 = filmController.create(film);
         User user1 = userController.create(user);
         Review review1 = reviewController.create(review);
-        Review review2 = reviewController.create(review);
-        reviewController.addLike(review1.getReviewId(), user1.getId());
-        reviewController.addDisLike(review2.getReviewId(), user1.getId());
+        Review review2= Review.builder().filmId(1).userId(1).isPositive(false).content("222").build();
+        review2 = reviewController.create(review2);
+        reviewController.addLike(review1.getReviewId(),user1.getId());
+        reviewController.addDisLike(review2.getReviewId(),user1.getId());
+        review1=reviewController.get(1L);
         assertEquals(review1, reviewController.getAllByFilm(1L, 1).stream().findFirst().orElse(null));
     }
 

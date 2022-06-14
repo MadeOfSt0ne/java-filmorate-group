@@ -39,6 +39,12 @@ public class ReviewService {
     public void updateReview(Review review) {
         reviewStorage.update(review);
     }
+    /**
+     * Удаляет комментарий.
+     *
+     * @param id комментарий
+     */
+    public void deleteReview(Long id){reviewStorage.remove(id);}
 
     /**
      * Получает комментарий по идентификатору.
@@ -63,11 +69,10 @@ public class ReviewService {
         List<Review> list = new ArrayList<>();
         Collection<Review> collection = reviewStorage.getByFilm(id);
         for (Review review : collection) {
-            review.setUseful(reviewStorage.getCountLike(id).getUseful());
+            review.setUseful(reviewStorage.getCountLike(review.getReviewId()).getUseful());
             list.add(review);
         }
-        list.stream().sorted(Comparator.comparing(Review::getUseful)).limit(count).collect(Collectors.toList());
-        return list;
+        return list.stream().sorted(Comparator.comparing(Review::getUseful).reversed()).limit(count).collect(Collectors.toList());
     }
 
     /**
@@ -78,7 +83,7 @@ public class ReviewService {
      * @param isUseful обозначение объективности комментария
      */
     public void addLike(Long reviewId, Long userId, boolean isUseful) {
-        reviewStorage.saveLike(LikeReview.builder().reviewId(reviewId).userId(userId).isUseful(isUseful).build());
+        reviewStorage.saveLike(LikeReview.builder().reviewId(reviewId).userId(userId).isUsefulness(isUseful).build());
     }
 
     /**
@@ -89,6 +94,6 @@ public class ReviewService {
      * @param isUseful обозначение объективности комментария
      */
     public void removeLike(Long reviewId, Long userId, boolean isUseful) {
-        reviewStorage.deleteLike(LikeReview.builder().reviewId(reviewId).userId(userId).isUseful(isUseful).build());
+        reviewStorage.deleteLike(LikeReview.builder().reviewId(reviewId).userId(userId).isUsefulness(isUseful).build());
     }
 }
