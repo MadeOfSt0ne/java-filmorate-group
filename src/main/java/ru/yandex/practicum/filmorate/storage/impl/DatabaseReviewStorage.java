@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -16,13 +16,10 @@ import java.util.Collection;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class DatabaseReviewStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public DatabaseReviewStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public Review add(Review review) {
@@ -79,6 +76,7 @@ public class DatabaseReviewStorage implements ReviewStorage {
     public void deleteLike(LikeReview likeReview) {
         String query = "DELETE FROM review_like WHERE user_id = ? AND review_id = ?";
         jdbcTemplate.update(query, likeReview.getUserId(), likeReview.getReviewId());
+
     }
 
     @Override
