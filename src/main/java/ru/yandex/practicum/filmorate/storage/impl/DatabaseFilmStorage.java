@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.*;
 
 /**
@@ -21,6 +20,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final DatabaseEventsStorage databaseEventsStorage;
 
     /**
      * Получает все фильмы из хранилища.
@@ -201,7 +201,7 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     public void save(Like like) {
         final String sql = "INSERT INTO likes (user_id, film_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, like.getUser().getId(), like.getFilm().getId());
-        addEvent(like, EventType.LIKE, EventType.ADD);
+        databaseEventsStorage.add(like, EventType.LIKE, EventOperations.ADD);
     }
 
     /**
@@ -214,7 +214,7 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     public void delete(Like like) {
         final String sql = "DELETE FROM likes WHERE user_id = ? AND film_id = ?";
         jdbcTemplate.update(sql, like.getUser().getId(), like.getFilm().getId());
-        addEvent(like, EventType.LIKE, EventType.REMOVE);
+        databaseEventsStorage.add(like, EventType.LIKE, EventOperations.REMOVE);
     }
 
     private Map<Long, Set<Genre>> getAllFilmsGenres() {
@@ -249,15 +249,5 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
                 .genres(genres != null && genres.isEmpty() ? null : genres)
                 .mpa(MpaRating.builder().id(rs.getInt("mpa_id")).title(rs.getString("title")).build())
                 .build();
-    }
-
-    private void addEvent(Like like, EventType eventType, EventType eventOperation) {
-        jdbcTemplate.update("INSERT INTO events (USER_ID, EVENT_TYPE, OPERATION, TIME_STAMP, ENTITY_ID) " +
-                        "VALUES (?, ?, ?, ?, ?)",
-                like.getUser().getId(),
-                eventType.toString(),
-                eventOperation.toString(),
-                Instant.now().toEpochMilli(),
-                like.getFilm().getId());
     }
 }

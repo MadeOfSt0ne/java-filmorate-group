@@ -1,32 +1,25 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.Like;
-import ru.yandex.practicum.filmorate.model.LikeReview;
-import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public DatabaseReviewStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final DatabaseEventsStorage databaseEventsStorage;
 
     @Override
     public Review add(Review review) {
@@ -41,7 +34,7 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
             return stmt;
         }, keyHolder);
         review.setReviewId(keyHolder.getKey().longValue());
-        addEvent(review, EventType.REVIEW, EventType.ADD);
+        databaseEventsStorage.add(review, EventType.REVIEW, EventOperations.ADD);
         return review;
     }
 
@@ -60,7 +53,7 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
                 review.getUserId(),
                 review.getFilmId(),
                 review.getReviewId());
-        addEvent(review, EventType.REVIEW, EventType.UPDATE);
+        databaseEventsStorage.add(review, EventType.REVIEW, EventOperations.UPDATE);
     }
 
     @Override
@@ -118,14 +111,5 @@ public class DatabaseReviewStorage implements ReviewStorage, ReviewLikeStorage {
                 .userId(resultSet.getLong("user_id"))
                 .filmId(resultSet.getLong("film_id"))
                 .build();
-    }
-    private void addEvent(Review review, EventType eventType, EventType eventOperation) {
-        jdbcTemplate.update("INSERT INTO events (USER_ID, EVENT_TYPE, OPERATION, TIME_STAMP, ENTITY_ID) " +
-                        "VALUES (?, ?, ?, ?, ?)",
-                review.getUserId(),
-                eventType.toString(),
-                eventOperation.toString(),
-                Instant.now().toEpochMilli(),
-                review.getFilmId());
     }
 }

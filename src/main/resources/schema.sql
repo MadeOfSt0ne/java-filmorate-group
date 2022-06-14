@@ -71,8 +71,8 @@ CREATE TABLE IF NOT EXISTS events
 (
     event_id BIGINT auto_increment PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    event_type VARCHAR(255)  NOT NULL,
-    operation VARCHAR(255)  NOT NULL,
+    event_type VARCHAR(50) NOT NULL,
+    event_operation VARCHAR(50)  NOT NULL,
     time_stamp BIGINT NOT NULL,
     entity_id BIGINT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
