@@ -79,18 +79,13 @@ public class DatabaseReviewStorage implements ReviewStorage {
     public void deleteLike(LikeReview likeReview) {
         String query = "DELETE FROM review_like WHERE user_id = ? AND review_id = ?";
         jdbcTemplate.update(query, likeReview.getUserId(), likeReview.getReviewId());
-
     }
 
     @Override
     public LikeReview getCountLike(Long reviewId) {
-
         String positive = "SELECT review_id, COUNT(review_id) as useful  FROM review_like WHERE is_useful=TRUE AND review_id=? GROUP BY review_id ";
-
         LikeReview pos = getLikeReviewCount(reviewId, positive);
-
         String negative = "SELECT review_id, COUNT(review_id) as useful  FROM review_like WHERE is_useful=FALSE AND review_id=? GROUP BY review_id";
-
         LikeReview neg = getLikeReviewCount(reviewId, negative);
         LikeReview result = LikeReview.builder().reviewId(reviewId).useful(pos.getUseful() - neg.getUseful()).build();
         return result;
