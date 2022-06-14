@@ -122,18 +122,14 @@ public class FilmService {
         return filmStorage.searchFilmByTitle(substring);
     }
 
-    public Collection<Film> getCommonPopular(final Long userId, final Long friendId) {
+    public Collection<Film> getCommonFilms(final Long userId, final Long friendId) {
         if (userService.getUser(userId) == null || userService.getUser(friendId) == null) {
             throw new NoSuchElementException();
         }
-        if (userService.getUserFriends(userId).contains(userService.getUser(friendId)) ||
-                userService.getUserFriends(friendId).contains(userService.getUser(userId))) {
 
             Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
             intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
             return intersection;
-        } else
-            return new ArrayList<>();
     }
 
     /**
