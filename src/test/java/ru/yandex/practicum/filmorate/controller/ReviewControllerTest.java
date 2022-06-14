@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -48,9 +49,9 @@ class ReviewControllerTest {
 
     @Test
     void testCreateCorrectReview() {
-        filmController.create(film);
-        userController.create(user);
-        Review review1 = reviewController.create(review);
+        Film film1=filmController.create(film);
+        User user1=userController.create(user);
+        Review review1 = reviewController.create(Review.builder().filmId(film1.getId()).userId(user1.getId()).isPositive(true).content("wwwwww").build());
         assertEquals(review1, reviewController.get(review1.getReviewId()));
     }
 
@@ -58,32 +59,32 @@ class ReviewControllerTest {
     void testAddLikeToReview() {
         Film film1 = filmController.create(film);
         User user1 = userController.create(user);
-        Review review1 = reviewController.create(review);
+        Review review1 = reviewController.create(Review.builder().filmId(film1.getId()).userId(user1.getId()).isPositive(true).content("wwwwww").build());
         reviewController.addLike(review1.getReviewId(), user1.getId());
-        assertEquals(review1, reviewController.getAllByFilm(1L, 10).stream().findFirst().orElse(null));
+        review1=reviewController.get(1L);
+        assertEquals(review1, reviewController.getAllByFilm(film1.getId(), 10).stream().findFirst().orElse(null));
     }
 
     @Test
     void testRemoveLikeToReview() {
         Film film1 = filmController.create(film);
         User user1 = userController.create(user);
-        Review review1 = reviewController.create(review);
+        Review review1 = reviewController.create(Review.builder().filmId(film1.getId()).userId(user1.getId()).isPositive(true).content("wwwwww").build());
         reviewController.addLike(review1.getReviewId(), user1.getId());
         reviewController.removeLike(review1.getReviewId(), user1.getId());
-        assertEquals(review1, reviewController.getAllByFilm(1L, 10).stream().findFirst().orElse(null));
+        assertEquals(review1, reviewController.getAllByFilm(film1.getId(), 10).stream().findFirst().orElse(null));
     }
 
     @Test
     void testGetPopularReview() {
         Film film1 = filmController.create(film);
         User user1 = userController.create(user);
-        Review review1 = reviewController.create(review);
-        Review review2= Review.builder().filmId(1).userId(1).isPositive(false).content("222").build();
-        review2 = reviewController.create(review2);
+        Review review1 = reviewController.create(Review.builder().filmId(film1.getId()).userId(user1.getId()).isPositive(true).content("wwwwww").build());
+        Review review2 = reviewController.create(Review.builder().filmId(film1.getId()).userId(user1.getId()).isPositive(false).content("222").build());
         reviewController.addLike(review1.getReviewId(),user1.getId());
         reviewController.addDisLike(review2.getReviewId(),user1.getId());
         review1=reviewController.get(1L);
-        assertEquals(review1, reviewController.getAllByFilm(1L, 1).stream().findFirst().orElse(null));
+        assertEquals(review1, reviewController.getAllByFilm(film1.getId(), 1).stream().findFirst().orElse(null));
     }
 
 }
