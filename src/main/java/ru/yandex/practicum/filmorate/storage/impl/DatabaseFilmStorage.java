@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -277,12 +276,17 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
         databaseEventsStorage.add(like, EventType.LIKE, EventOperations.REMOVE);
     }
 
+    /**
+     * Получает все жанры всех фильмов. Оптимизация -> не ходить каждый раз в базу.
+     *
+     * @return хэш-мапа жанрав с ключом по фильму
+     */
     private Map<Long, Set<Genre>> getAllFilmsGenres() {
         final String sql = "SELECT * FROM film_genres INNER JOIN genres ON genres.genre_id = film_genres.genre_id";
 
         final Map<Long, Set<Genre>> filmsGenres = new HashMap<>();
 
-        jdbcTemplate.query(sql, (RowCallbackHandler) rs -> {
+        jdbcTemplate.query(sql, rs -> {
             final Long filmId = rs.getLong("film_id");
             filmsGenres.getOrDefault(filmId, new HashSet<>()).add(Genre.builder().id(rs.getInt("genre_id"))
                     .title(rs.getString("title")).build());

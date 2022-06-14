@@ -6,7 +6,10 @@ import ru.yandex.practicum.filmorate.model.LikeReview;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -75,7 +78,8 @@ public class ReviewService {
             review.setUseful(reviewStorage.getCountLike(review.getReviewId()).getUseful());
             list.add(review);
         }
-        return list.stream().sorted(Comparator.comparing(Review::getUseful).reversed()).limit(count).collect(Collectors.toList());
+        return list.stream().sorted(Comparator.comparing(Review::getUseful).reversed()).limit(count)
+                .collect(Collectors.toList());
     }
 
     /**

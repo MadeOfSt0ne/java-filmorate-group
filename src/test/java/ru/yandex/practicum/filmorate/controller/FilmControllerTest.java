@@ -115,7 +115,8 @@ public class FilmControllerTest {
         final Film film2 = filmController.create(film);
         final User user1 = userController.create(user);
         filmController.addLike(film2.getId(), user1.getId());
-        assertEquals(film2, filmController.getPopular(1, null, null).stream().findFirst().orElse(null));
+        assertEquals(film2, filmController.getPopular(1, null, null).stream()
+                .findFirst().orElse(null));
     }
 
     @Test
@@ -130,7 +131,8 @@ public class FilmControllerTest {
         final User user1 = userController.create(user);
         filmController.addLike(film1.getId(), user1.getId());
         filmController.removeLike(film1.getId(), user1.getId());
-        assertEquals(film1, filmController.getPopular(1, null, null).stream().findFirst().orElse(null));
+        assertEquals(film1, filmController.getPopular(1, null, null).stream()
+                .findFirst().orElse(null));
     }
 
     @Test
@@ -180,12 +182,11 @@ public class FilmControllerTest {
         filmController.addLike(film1.getId(), user1.getId());
         filmController.addLike(film1.getId(), user3.getId());
         filmController.addLike(film2.getId(), user3.getId());
-        assertEquals(0, filmController.getCommonPopularFilms(user1.getId(), user3.getId()).size());
-        //Не друзья, нет общих фильмов
+
         userController.addFriends(user1.getId(), user3.getId());
         userController.addFriends(user3.getId(), user1.getId());
+
         assertEquals(1, filmController.getCommonPopularFilms(user1.getId(), user3.getId()).size());
-        //Друзья, есть общий фильм
     }
 
     @Test

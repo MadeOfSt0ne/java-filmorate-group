@@ -43,6 +43,7 @@ public class ReviewController {
         log.info("GET BY ID {}", id);
         return reviewService.findReviewById(id);
     }
+
     @DeleteMapping("{id}")
     void delete(@PathVariable Long id) {
         log.info("DELETE BY ID {}", id);

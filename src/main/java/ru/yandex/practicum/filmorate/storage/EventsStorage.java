@@ -16,8 +16,9 @@ public interface EventsStorage {
     Collection<Event> getEvents(Long id);
 
     /**
-     * Сохраняет событие в таблицу events
-     * @param object Сущьность с которой произошло событие
+     * Сохраняет событие в таблицу events.
+     *
+     * @param object    Сущьность с которой произошло событие
      * @param eventType Тип события
      * @param operation Подтип события
      */

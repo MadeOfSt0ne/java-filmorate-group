@@ -10,7 +10,10 @@ import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * Класс-сервис для управления фильмами.
@@ -110,7 +113,7 @@ public class FilmService {
         likeStorage.delete(Like.builder().film(getFilm(id)).user(userService.getUser(userId)).build());
     }
 
-     /**
+    /**
      * Поиск фильма по фрагменту названия независимо от регистра.
      *
      * @param substring фрагмент
@@ -127,9 +130,9 @@ public class FilmService {
             throw new NoSuchElementException();
         }
 
-            Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
-            intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
-            return intersection;
+        Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
+        intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
+        return intersection;
     }
 
     /**

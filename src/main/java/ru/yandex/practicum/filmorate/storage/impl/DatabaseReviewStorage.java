@@ -5,6 +5,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.EventOperations;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.LikeReview;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
@@ -20,6 +22,7 @@ import java.util.List;
 public class DatabaseReviewStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
 
+    private final DatabaseEventsStorage databaseEventsStorage;
 
     @Override
     public Review add(Review review) {
@@ -34,6 +37,7 @@ public class DatabaseReviewStorage implements ReviewStorage {
             return stmt;
         }, keyHolder);
         review.setReviewId(keyHolder.getKey().longValue());
+        databaseEventsStorage.add(review, EventType.REVIEW, EventOperations.ADD);
         return review;
     }
 
@@ -52,6 +56,7 @@ public class DatabaseReviewStorage implements ReviewStorage {
                 review.getUserId(),
                 review.getFilmId(),
                 review.getReviewId());
+        databaseEventsStorage.add(review, EventType.REVIEW, EventOperations.UPDATE);
     }
 
     @Override

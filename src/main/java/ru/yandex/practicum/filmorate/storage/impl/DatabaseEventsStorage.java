@@ -18,6 +18,12 @@ import java.util.List;
 public class DatabaseEventsStorage implements EventsStorage {
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * Возращает историю действий друзей пользователя.
+     *
+     * @param id уникальный идентификатор пользователя
+     * @return список истории
+     */
     @Override
     public Collection<Event> getEvents(Long id) {
         List<Event> list = new ArrayList<>();
@@ -42,9 +48,16 @@ public class DatabaseEventsStorage implements EventsStorage {
         return list;
     }
 
+    /**
+     * Сохраняет событие в таблицу events.
+     *
+     * @param object    Сущьность с которой произошло событие
+     * @param eventType Тип события
+     * @param operation Подтип события
+     */
     @Override
     public void add(Object object, EventType eventType, EventOperations operation) {
-        if (object instanceof Like){
+        if (object instanceof Like) {
             jdbcTemplate.update("INSERT INTO events (USER_ID, EVENT_TYPE, EVENT_OPERATION, TIME_STAMP, ENTITY_ID) " +
                             "VALUES (?, ?, ?, ?, ?)",
                     ((Like) object).getUser().getId(),

@@ -7,7 +7,10 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -130,14 +133,9 @@ public class UserService {
         User user1 = getUser(id);
         User user2 = getUser(otherId);
 
-            Set<Long> intersection = new HashSet<>(friendshipStorage.getUserFriendsIds(user1.getId()));
-            intersection.retainAll(friendshipStorage.getUserFriendsIds(user2.getId()));
+        Set<Long> intersection = new HashSet<>(friendshipStorage.getUserFriendsIds(user1.getId()));
+        intersection.retainAll(friendshipStorage.getUserFriendsIds(user2.getId()));
 
-            return intersection.stream().map(userStorage::get).collect(Collectors.toList());
-    }
-
-    public boolean isFriends(Long id, Long friendId) {
-        return friendshipStorage.getUserFriendsIds(id).contains(friendId) &&
-                friendshipStorage.getUserFriendsIds(friendId).contains(id);
+        return intersection.stream().map(userStorage::get).collect(Collectors.toList());
     }
 }
