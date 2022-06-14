@@ -133,12 +133,8 @@ public class FilmService {
         if (userService.getUser(userId) == null || userService.getUser(friendId) == null) {
             throw new NoSuchElementException();
         }
-        if (userService.isFriends(userId, friendId)) {
-
             Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
             intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
             return intersection;
-        } else
-            return new ArrayList<>();
     }
 }
