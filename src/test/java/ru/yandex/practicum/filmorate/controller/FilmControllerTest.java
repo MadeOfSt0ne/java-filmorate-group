@@ -8,16 +8,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -117,7 +115,7 @@ public class FilmControllerTest {
         final Film film2 = filmController.create(film);
         final User user1 = userController.create(user);
         filmController.addLike(film2.getId(), user1.getId());
-        assertEquals(film2, filmController.getPopular(1).stream().findFirst().orElse(null));
+        assertEquals(film2, filmController.getPopular(1, null, null).stream().findFirst().orElse(null));
     }
 
     @Test
@@ -132,7 +130,7 @@ public class FilmControllerTest {
         final User user1 = userController.create(user);
         filmController.addLike(film1.getId(), user1.getId());
         filmController.removeLike(film1.getId(), user1.getId());
-        assertEquals(film1, filmController.getPopular(1).stream().findFirst().orElse(null));
+        assertEquals(film1, filmController.getPopular(1, null, null).stream().findFirst().orElse(null));
     }
 
     @Test
@@ -141,7 +139,7 @@ public class FilmControllerTest {
         final Film film2 = filmController.create(film.toBuilder().name("test2").build());
         final User user1 = userController.create(user);
         filmController.addLike(film2.getId(), user1.getId());
-        assertEquals(List.of(film2), filmController.getPopular(1));
+        assertEquals(List.of(film2), filmController.getPopular(1, null, null));
     }
 
     @Test
@@ -151,6 +149,15 @@ public class FilmControllerTest {
         final User user1 = userController.create(user);
         filmController.addLike(film2.getId(), user1.getId());
         assertEquals(List.of(film2), filmController.searchFilmByTitle("tERm", "title"));
+    }
+
+    @Test
+    void testSearchFilmByGenreAndYear() {
+        final Genre genre = Genre.builder().id(1).title("Comedy").build();
+        final Film film1 = filmController.create(film.toBuilder().genres(Set.of(genre)).build());
+        final User user1 = userController.create(user);
+        filmController.addLike(film1.getId(), user1.getId());
+        assertEquals(List.of(film1), filmController.getPopular(7, 1, 1970));
     }
 
     @Test
@@ -179,5 +186,22 @@ public class FilmControllerTest {
         userController.addFriends(user3.getId(), user1.getId());
         assertEquals(1, filmController.getCommonPopularFilms(user1.getId(), user3.getId()).size());
         //Друзья, есть общий фильм
+    }
+
+    @Test
+    void testSearchFilmByGenre() {
+        final Genre genre = Genre.builder().id(1).title("Comedy").build();
+        final Film film1 = filmController.create(film.toBuilder().genres(Set.of(genre)).build());
+        final User user1 = userController.create(user);
+        filmController.addLike(film1.getId(), user1.getId());
+        assertEquals(List.of(film1), filmController.getPopular(7, 1, null));
+    }
+
+    @Test
+    void testSearchFilmByYear() {
+        final Film film1 = filmController.create(film);
+        final User user1 = userController.create(user);
+        filmController.addLike(film1.getId(), user1.getId());
+        assertEquals(List.of(film1), filmController.getPopular(7, null, 1970));
     }
 }

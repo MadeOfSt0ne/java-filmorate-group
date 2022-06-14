@@ -69,12 +69,24 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
     }
 
     /**
-     * Реализация метода поиска фильма в inMemory не требуется, поэтому метод возвращает ошибку.
+     * Поиск фильма по фрагменту названия. Реализация не требуется, поэтому метод возвращает ошибку.
      *
      * @param str фрагмент названия
      */
     @Override
     public Collection<Film> searchFilmByTitle(String str) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Поиск фильма по жанру и году выпуска. Реализация не требуется, поэтому метод возвращает ошибку
+     *
+     * @param genreId id жанра
+     * @param year    год выпуска
+     * @param limit   количество отображаемых фильмов
+     */
+    @Override
+    public Collection<Film> searchFilmByGenreAndYear(Integer limit, Integer genreId, Integer year) {
         throw new UnsupportedOperationException();
     }
 
@@ -86,8 +98,7 @@ public class InMemoryFilmStorage implements FilmStorage, LikeStorage {
      */
     @Override
     public Collection<Film> getPopularFilms(Integer limit) {
-        final Comparator<Film> comparator = Comparator.comparingInt(x -> likes.getOrDefault(x.getId(),
-                new HashSet<>()).size());
+        final Comparator<Film> comparator = Comparator.comparingInt(x -> likes.getOrDefault(x.getId(), new HashSet<>()).size());
 
         return films.values().stream().sorted(comparator.reversed()).limit(limit).collect(Collectors.toList());
     }

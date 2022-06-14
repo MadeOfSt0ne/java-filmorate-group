@@ -22,6 +22,39 @@ import java.util.*;
 public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
     private final JdbcTemplate jdbcTemplate;
 
+    private static final String SQL_SEARCH_TITLE = "SELECT * FROM films AS f LEFT OUTER JOIN " +
+            "(SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
+            "AS l ON f.film_id = l.film_id " +
+            "LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
+            "WHERE f.name ILIKE CONCAT('%', ?, '%')" +
+            "ORDER BY l.likes_count DESC;";
+
+    private static final String SQL_SEARCH_GENRE_YEAR = "SELECT * FROM films AS f " +
+            "LEFT OUTER JOIN (SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
+            "AS l ON f.film_id = l.film_id " +
+            "LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
+            "LEFT OUTER JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+            "WHERE fg.genre_id = ? AND EXTRACT (YEAR FROM f.release_date) = ? " +
+            "ORDER BY l.likes_count DESC " +
+            "LIMIT ?;";
+
+    private static final String SQL_SEARCH_GENRE = "SELECT * FROM films AS f " +
+            "LEFT OUTER JOIN (SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
+            "AS l ON f.film_id = l.film_id " +
+            "LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
+            "LEFT OUTER JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+            "WHERE fg.genre_id = ? " +
+            "ORDER BY l.likes_count DESC " +
+            "LIMIT ?;";
+
+    private static final String SQL_SEARCH_YEAR = "SELECT * FROM films AS f " +
+            "LEFT OUTER JOIN (SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
+            "AS l ON f.film_id = l.film_id " +
+            "LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
+            "WHERE EXTRACT (YEAR FROM f.release_date) = ? " +
+            "ORDER BY l.likes_count DESC " +
+            "LIMIT ?;";
+
     /**
      * Получает все фильмы из хранилища.
      *
@@ -118,18 +151,43 @@ public class DatabaseFilmStorage implements FilmStorage, LikeStorage {
      */
     @Override
     public Collection<Film> searchFilmByTitle(String str) {
-        final String slqSearch = "SELECT * FROM films AS f LEFT OUTER JOIN " +
-                "(SELECT film_id, COUNT (*) likes_count FROM likes GROUP BY film_id) " +
-                "AS l ON f.film_id = l.film_id LEFT OUTER JOIN mpa AS mpa ON f.mpa_id = mpa.mpa_id " +
-                "WHERE f.name ILIKE CONCAT('%', ?, '%')" +
-                "ORDER BY l.likes_count DESC;";
 
-        final Map<Long, Set<Genre>> filmsGenres = getAllFilmsGenres();
-
-        return jdbcTemplate.query(slqSearch, (rs, rowNum) -> {
+        return jdbcTemplate.query(SQL_SEARCH_TITLE, (rs, rowNum) -> {
             final Long filmId = rs.getLong("film_id");
-            return mapRowToFilm(rs, filmsGenres.get(filmId));
+            return mapRowToFilm(rs, getFilmGenresById(filmId));
         }, str);
+
+    }
+
+    /**
+     * Поиск фильма по жанру и/или году выпуска.
+     *
+     * @param genreId id жанра
+     * @param year    год выпуска
+     * @param limit   количество отображаемых фильмов
+     */
+    @Override
+    public Collection<Film> searchFilmByGenreAndYear(Integer limit, Integer genreId, Integer year) {
+        if (year != null && genreId != null) {
+            return jdbcTemplate.query(SQL_SEARCH_GENRE_YEAR, (rs, rowNum) -> {
+                final Long filmId = rs.getLong("film_id");
+                return mapRowToFilm(rs, getFilmGenresById(filmId));
+            }, genreId, year, limit);
+        }
+        if (year == null && genreId != null) {
+            return jdbcTemplate.query(SQL_SEARCH_GENRE, (rs, rowNum) -> {
+                final Long filmId = rs.getLong("film_id");
+                return mapRowToFilm(rs, getFilmGenresById(filmId));
+            }, genreId, limit);
+        }
+        if (year != null) {
+            return jdbcTemplate.query(SQL_SEARCH_YEAR, (rs, rowNum) -> {
+                final Long filmId = rs.getLong("film_id");
+                return mapRowToFilm(rs, getFilmGenresById(filmId));
+            }, year, limit);
+        }
+        throw new NoSuchElementException();
+
     }
 
     /**

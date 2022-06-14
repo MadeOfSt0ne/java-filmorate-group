@@ -20,7 +20,6 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
     private final LikeStorage likeStorage;
-
     private final ApplicationEventPublisher publisher;
 
     @Autowired
@@ -111,17 +110,11 @@ public class FilmService {
         likeStorage.delete(Like.builder().film(getFilm(id)).user(userService.getUser(userId)).build());
     }
 
-    /**
-     * Получает список самых популярных (залайканных) фильмов.
+     /**
+     * Поиск фильма по фрагменту названия независимо от регистра.
      *
-     * @param count кол-во фильмов
-     * @return коллекция из фильмов
-     * @throws NoSuchElementException - если фильма не существует.
+     * @param substring фрагмент
      */
-    public Collection<Film> getPopularFilms(final Integer count) {
-        return likeStorage.getPopularFilms(count != null ? count : 10);
-    }
-
     public Collection<Film> searchFilmByTitle(final String substring, final String title) {
         if (substring == null || !title.equals("title")) {
             return null;
@@ -141,5 +134,19 @@ public class FilmService {
             return intersection;
         } else
             return new ArrayList<>();
+    }
+
+    /**
+     * Поиск фильма по жанру и году выпуска
+     *
+     * @param genreId id жанра
+     * @param year    год выпуска
+     * @param limit   количество отображаемых фильмов
+     */
+    public Collection<Film> searchFilmByGenreAndYear(Integer limit, Integer genreId, Integer year) {
+        if (genreId == null && year == null) {
+            return likeStorage.getPopularFilms(limit != null ? limit : 10);
+        }
+        return filmStorage.searchFilmByGenreAndYear(limit, genreId, year);
     }
 }
