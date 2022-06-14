@@ -39,12 +39,15 @@ public class ReviewService {
     public void updateReview(Review review) {
         reviewStorage.update(review);
     }
+
     /**
      * Удаляет комментарий.
      *
      * @param id комментарий
      */
-    public void deleteReview(Long id){reviewStorage.remove(id);}
+    public void deleteReview(Long id) {
+        reviewStorage.remove(id);
+    }
 
     /**
      * Получает комментарий по идентификатору.

@@ -85,14 +85,14 @@ public class DatabaseReviewStorage implements ReviewStorage {
     @Override
     public LikeReview getCountLike(Long reviewId) {
 
-        String positive="SELECT review_id, COUNT(review_id) as useful  FROM review_like WHERE is_useful=TRUE AND review_id=? GROUP BY review_id ";
+        String positive = "SELECT review_id, COUNT(review_id) as useful  FROM review_like WHERE is_useful=TRUE AND review_id=? GROUP BY review_id ";
 
         LikeReview pos = getLikeReviewCount(reviewId, positive);
 
-        String negative="SELECT review_id, COUNT(review_id) as useful  FROM review_like WHERE is_useful=FALSE AND review_id=? GROUP BY review_id";
+        String negative = "SELECT review_id, COUNT(review_id) as useful  FROM review_like WHERE is_useful=FALSE AND review_id=? GROUP BY review_id";
 
         LikeReview neg = getLikeReviewCount(reviewId, negative);
-        LikeReview result= LikeReview.builder().reviewId(reviewId).useful(pos.getUseful()-neg.getUseful()).build();
+        LikeReview result = LikeReview.builder().reviewId(reviewId).useful(pos.getUseful() - neg.getUseful()).build();
         return result;
     }
 
@@ -100,9 +100,9 @@ public class DatabaseReviewStorage implements ReviewStorage {
         List<LikeReview> list = jdbcTemplate.query(positive, this::mapRowToLikeReview, reviewId);
         LikeReview pos;
         if (list.size() > 0) {
-            pos= list.get(0);
+            pos = list.get(0);
         } else {
-            pos= LikeReview.builder().reviewId(reviewId).useful(0).build();
+            pos = LikeReview.builder().reviewId(reviewId).useful(0).build();
         }
         return pos;
     }
