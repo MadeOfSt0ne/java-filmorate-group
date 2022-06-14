@@ -60,7 +60,7 @@ public class FilmController {
 
     @GetMapping("/request?userId={userId}&friendId={friendId}")
     Collection<Film> getCommonPopularFilms(@PathVariable final Long userId, @PathVariable final Long friendId) {
-        return filmService.getCommonPopular(userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     @PutMapping("{id}/like/{userId}")

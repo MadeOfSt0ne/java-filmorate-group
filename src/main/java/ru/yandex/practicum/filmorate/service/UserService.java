@@ -138,4 +138,11 @@ public class UserService {
 
         return intersection.stream().map(userStorage::get).collect(Collectors.toList());
     }
+
+    public boolean isFriends(Long id, Long friendId) {
+        if (getUserFriends(id).contains(getUser(friendId)) ||
+                getUserFriends(friendId).contains(getUser(id))) {
+            return true;
+        } else return false;
+    }
 }
