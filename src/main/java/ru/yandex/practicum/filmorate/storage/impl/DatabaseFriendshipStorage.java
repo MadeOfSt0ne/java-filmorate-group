@@ -3,12 +3,12 @@ package ru.yandex.practicum.filmorate.storage.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.EventOperations;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.Collection;
 
 /**
@@ -18,6 +18,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class DatabaseFriendshipStorage implements FriendshipStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final DatabaseEventsStorage databaseEventsStorage;
 
     /**
      * Получает друзей пользователя по идентификатору.
@@ -42,7 +43,7 @@ public class DatabaseFriendshipStorage implements FriendshipStorage {
     public void save(Friendship friendship) {
         final String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, friendship.getUser().getId(), friendship.getFriend().getId());
-        addEvent(friendship, EventType.FRIEND, EventType.ADD);
+        databaseEventsStorage.add(friendship, EventType.FRIEND, EventOperations.ADD);
     }
 
     /**
@@ -55,16 +56,6 @@ public class DatabaseFriendshipStorage implements FriendshipStorage {
     public void delete(Friendship friendship) {
         final String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, friendship.getUser().getId(), friendship.getFriend().getId());
-        addEvent(friendship, EventType.FRIEND, EventType.REMOVE);
-    }
-
-    private void addEvent(Friendship friendship, EventType eventType, EventType eventOperation) {
-        jdbcTemplate.update("INSERT INTO events (USER_ID, EVENT_TYPE, OPERATION, TIME_STAMP, ENTITY_ID)" +
-                        "VALUES (?, ?, ?, ?, ?)",
-                friendship.getUser().getId(),
-                eventType.toString(),
-                eventOperation.toString(),
-                Instant.now().toEpochMilli(),
-                friendship.getFriend().getId());
+        databaseEventsStorage.add(friendship, EventType.FRIEND, EventOperations.REMOVE);
     }
 }
