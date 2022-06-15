@@ -43,4 +43,20 @@ public interface FilmStorage {
      * @param film фильм
      */
     void remove(Film film);
+
+    /**
+     * Поиск фильма по фрагменту названия
+     *
+     * @param str фрагмент
+     */
+    Collection<Film> searchFilmByTitle(String str);
+
+    /**
+     * Поиск фильма по жанру и году выпуска
+     *
+     * @param genreId id жанра
+     * @param year    год выпуска
+     * @param limit   количество отображаемых фильмов
+     */
+    Collection<Film> searchFilmByGenreAndYear(Integer limit, Integer genreId, Integer year);
 }

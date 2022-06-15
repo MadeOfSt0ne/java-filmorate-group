@@ -89,7 +89,8 @@ public class UserService {
      * @throws NoSuchElementException - если пользователя не существует.
      */
     public Collection<User> getUserFriends(final Long id) {
-        return friendshipStorage.getUserFriendsIds(getUser(id).getId()).stream().map(userStorage::get).collect(Collectors.toList());
+        return friendshipStorage.getUserFriendsIds(getUser(id).getId()).stream().map(userStorage::get)
+                .collect(Collectors.toList());
     }
 
     /**

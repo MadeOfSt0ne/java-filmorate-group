@@ -2,14 +2,18 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.events.FilmLikeAddedEvent;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * Класс-сервис для управления фильмами.
@@ -19,13 +23,18 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
     private final LikeStorage likeStorage;
+    private final ApplicationEventPublisher publisher;
 
     @Autowired
-    FilmService(FilmStorage databaseFilmStorage, @Qualifier("databaseFilmStorage") LikeStorage databaseLikeStorage,
-                UserService userService) {
+    FilmService(FilmStorage databaseFilmStorage,
+                @Qualifier("databaseFilmStorage") LikeStorage databaseLikeStorage,
+                UserService userService,
+                ApplicationEventPublisher publisher
+    ) {
         this.filmStorage = databaseFilmStorage;
         this.userService = userService;
         this.likeStorage = databaseLikeStorage;
+        this.publisher = publisher;
     }
 
     /**
@@ -90,6 +99,7 @@ public class FilmService {
      */
     public void addLikeToFilm(final Long id, final Long userId) {
         likeStorage.save(Like.builder().film(getFilm(id)).user(userService.getUser(userId)).build());
+        publisher.publishEvent(new FilmLikeAddedEvent(this));
     }
 
     /**
@@ -104,13 +114,38 @@ public class FilmService {
     }
 
     /**
-     * Получает список самых популярных (залайканных) фильмов.
+     * Поиск фильма по фрагменту названия независимо от регистра.
      *
-     * @param count кол-во фильмов
-     * @return коллекция из фильмов
-     * @throws NoSuchElementException - если фильма не существует.
+     * @param substring фрагмент
      */
-    public Collection<Film> getPopularFilms(final Integer count) {
-        return likeStorage.getPopularFilms(count != null ? count : 10);
+    public Collection<Film> searchFilmByTitle(final String substring, final String title) {
+        if (substring == null || !title.equals("title")) {
+            return null;
+        }
+        return filmStorage.searchFilmByTitle(substring);
+    }
+
+    public Collection<Film> getCommonFilms(final Long userId, final Long friendId) {
+        if (userService.getUser(userId) == null || userService.getUser(friendId) == null) {
+            throw new NoSuchElementException();
+        }
+
+        Set<Film> intersection = new HashSet<>(likeStorage.getPopularFilmByUserId(friendId));
+        intersection.retainAll(likeStorage.getPopularFilmByUserId(userId));
+        return intersection;
+    }
+
+    /**
+     * Поиск фильма по жанру и году выпуска
+     *
+     * @param genreId id жанра
+     * @param year    год выпуска
+     * @param limit   количество отображаемых фильмов
+     */
+    public Collection<Film> searchFilmByGenreAndYear(Integer limit, Integer genreId, Integer year) {
+        if (genreId == null && year == null) {
+            return likeStorage.getPopularFilms(limit != null ? limit : 10);
+        }
+        return filmStorage.searchFilmByGenreAndYear(limit, genreId, year);
     }
 }
